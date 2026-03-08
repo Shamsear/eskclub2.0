@@ -35,14 +35,14 @@ export default function Navigation({ user }: NavigationProps) {
                 <div className="absolute inset-0 bg-white rounded-xl group-hover:scale-110 transition-transform shadow-lg overflow-hidden">
                   <img
                     src="/logo.png"
-                    alt="Eskimos Logo"
+                    alt="Eskimos 2.0 Logo"
                     className="w-full h-full object-contain p-1"
                   />
                 </div>
               </div>
               <div className="hidden sm:block">
                 <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Eskimos
+                  Eskimos 2.0
                 </span>
                 <p className="text-[10px] text-gray-500 -mt-1">Club Mode</p>
               </div>

@@ -10,7 +10,7 @@ interface BrandedLoaderProps {
 }
 
 /**
- * BrandedLoader - Animated loading indicator with Eskimos branding
+ * BrandedLoader - Animated loading indicator with Eskimos 2.0 branding
  * Used for data fetching and navigation loading states
  */
 export function BrandedLoader({ size = 'md', className = '' }: BrandedLoaderProps) {

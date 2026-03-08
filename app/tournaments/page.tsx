@@ -3,7 +3,7 @@ import { HeroText } from "@/components/ui/HeroText";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Tournaments — Eskimos Club",
+  title: "Tournaments — Eskimos 2.0",
   description: "Browse all eFootball Club Mode tournaments, live standings, bracket progress and match schedules.",
 };
 

@@ -38,10 +38,10 @@ export default async function LoginPage() {
               <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 overflow-hidden p-1.5"
                 style={{ background: "linear-gradient(135deg,#FF6600,#CC2900)", boxShadow: "0 0 20px rgba(255,102,0,0.4)" }}
               >
-                <img src="/logo.png" alt="Eskimos Logo" className="w-full h-full object-contain" />
+                <img src="/logo.png" alt="Eskimos 2.0 Logo" className="w-full h-full object-contain" />
               </div>
               <div>
-                <span className="block text-xl font-black font-['Outfit',sans-serif]" style={{ background: "linear-gradient(135deg,#FFB700,#FF6600)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Eskimos Club</span>
+                <span className="block text-xl font-black font-['Outfit',sans-serif]" style={{ background: "linear-gradient(135deg,#FFB700,#FF6600)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Eskimos 2.0</span>
                 <span className="text-[10px] text-[#555] tracking-widest uppercase">Admin Portal</span>
               </div>
             </Link>
@@ -77,7 +77,7 @@ export default async function LoginPage() {
           </div>
 
           <div className="relative z-10 mt-8 lg:mt-0">
-            <p className="text-[#333] text-xs">© {new Date().getFullYear()} Eskimos Club. All rights reserved.</p>
+            <p className="text-[#333] text-xs">© {new Date().getFullYear()} Eskimos 2.0. All rights reserved.</p>
           </div>
         </div>
 

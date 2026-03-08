@@ -3,7 +3,7 @@ import { HeroText } from "@/components/ui/HeroText";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Players — Eskimos Club",
+  title: "Players — Eskimos 2.0",
   description: "Explore player profiles with detailed statistics, match history and performance analytics.",
 };
 

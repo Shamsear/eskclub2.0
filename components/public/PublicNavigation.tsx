@@ -107,12 +107,12 @@ export default function PublicNavigation() {
                   className="absolute inset-0 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 overflow-hidden"
                   style={{ background: "linear-gradient(135deg, #FF6600 0%, #CC2900 100%)", boxShadow: "0 0 15px rgba(255,102,0,0.4)" }}
                 >
-                  <img src="/logo.png" alt="Eskimos Logo" className="w-full h-full object-contain p-1" />
+                  <img src="/logo.png" alt="Eskimos 2.0 Logo" className="w-full h-full object-contain p-1" />
                 </div>
               </div>
               <div className="hidden xs:block leading-none">
                 <span className="text-base sm:text-lg font-black font-['Outfit',sans-serif] bg-gradient-to-r from-[#FFB700] via-[#FF6600] to-[#FFB700] bg-clip-text text-transparent">
-                  Eskimos
+                  Eskimos 2.0
                 </span>
                 <p className="text-[9px] sm:text-[10px] text-[#555] tracking-widest uppercase -mt-0.5">Club Mode</p>
               </div>
@@ -247,11 +247,11 @@ export default function PublicNavigation() {
               className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ background: "linear-gradient(135deg,#FF6600,#CC2900)", boxShadow: "0 0 12px rgba(255,102,0,0.4)" }}
             >
-              <img src="/logo.png" alt="Eskimos" className="w-full h-full object-contain p-1" />
+              <img src="/logo.png" alt="Eskimos 2.0" className="w-full h-full object-contain p-1" />
             </div>
             <div className="leading-none">
               <span className="text-sm font-black font-['Outfit',sans-serif] bg-gradient-to-r from-[#FFB700] to-[#FF6600] bg-clip-text text-transparent">
-                Eskimos
+                Eskimos 2.0
               </span>
               <p className="text-[9px] text-[#555] tracking-widest uppercase">Club Mode</p>
             </div>

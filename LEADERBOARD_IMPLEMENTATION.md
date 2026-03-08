@@ -14,7 +14,7 @@ Complete implementation of the Leaderboard system with Players and Teams leaderb
 
 ### 2. Players Leaderboard Page
 **File:** `app/leaderboard/players/page.tsx`
-- Modern hero section with Eskimos branding
+- Modern hero section with Eskimos 2.0 branding
 - Tournament filter dropdown (Overall + specific tournaments)
 - Comprehensive stats table with:
   - Rank (with Gold/Silver/Bronze indicators)

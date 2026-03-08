@@ -1,5 +1,5 @@
 -- ============================================
--- Eskimos Club Database Schema (PostgreSQL)
+-- Eskimos 2.0 Club Database Schema (PostgreSQL)
 -- ============================================
 
 -- Create ENUM types

@@ -82,13 +82,13 @@ export default function PublicFooter() {
                 className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
                 style={{ background: "linear-gradient(135deg, #FF6600, #CC2900)", boxShadow: "0 0 16px rgba(255,102,0,0.3)" }}
               >
-                <img src="/logo.png" alt="Eskimos Logo" className="w-full h-full object-contain p-1" />
+                <img src="/logo.png" alt="Eskimos 2.0 Logo" className="w-full h-full object-contain p-1" />
               </div>
               <div>
                 <span
                   className="block text-lg font-black font-['Outfit',sans-serif] bg-gradient-to-r from-[#FFB700] to-[#FF6600] bg-clip-text text-transparent"
                 >
-                  Eskimos Club
+                  Eskimos 2.0
                 </span>
                 <span className="text-[10px] text-[#555] tracking-widest uppercase">eFootball Platform</span>
               </div>
@@ -169,7 +169,7 @@ export default function PublicFooter() {
         {/* ── Bottom bar ── */}
         <div className="pt-8 border-t border-[#111] flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-[#444] text-xs">
-            © {currentYear} Eskimos Sports Platform. All rights reserved.
+            © {currentYear} Eskimos 2.0 Sports Platform. All rights reserved.
           </p>
           <div className="flex gap-5">
             {[

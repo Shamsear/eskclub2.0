@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Teams Leaderboard — Eskimos Club',
+  title: 'Teams Leaderboard — Eskimos 2.0',
   description: 'Club teams ranked by points, wins, goals and win rate across all tournaments.',
 };
 

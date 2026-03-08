@@ -81,7 +81,7 @@ export default function Navigation() {
 
 ### BrandedLoader
 
-Animated loading indicator with Eskimos branding.
+Animated loading indicator with Eskimos 2.0 branding.
 
 **Variants:**
 - `BrandedLoader` - Standalone loader
@@ -295,7 +295,7 @@ This implementation satisfies the following requirements:
 ✅ Context-aware scroll management
 
 ### Requirement 8.5: Branded Loading Animations
-✅ Branded loader with Eskimos styling
+✅ Branded loader with Eskimos 2.0 styling
 ✅ Multiple loading state variants
 ✅ Skeleton loaders matching content structure
 ✅ Smooth loading animations

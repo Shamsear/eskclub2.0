@@ -4,10 +4,10 @@ import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: {
-    default: "Eskimos - Club Mode",
-    template: "%s | Eskimos"
+    default: "Eskimos 2.0 - Club Mode",
+    template: "%s | Eskimos 2.0"
   },
-  description: "Manage sports clubs, members, tournaments, and hierarchies with Eskimos Club Mode",
+  description: "Manage sports clubs, members, tournaments, and hierarchies with Eskimos 2.0 Club Mode",
 };
 
 export default function RootLayout({

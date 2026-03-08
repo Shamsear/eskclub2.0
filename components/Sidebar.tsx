@@ -261,13 +261,13 @@ export default function Sidebar() {
             <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-md flex-shrink-0 overflow-hidden">
               <img
                 src="/logo.png"
-                alt="Eskimos Logo"
+                alt="Eskimos 2.0 Logo"
                 className="w-full h-full object-contain p-1"
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-gray-900 truncate">Eskimos</p>
-              <p className="text-xs text-gray-500">v1.0.0</p>
+              <p className="text-sm font-bold text-gray-900 truncate">Eskimos 2.0</p>
+              <p className="text-xs text-gray-500">v2.0.0</p>
             </div>
           </div>
         </div>

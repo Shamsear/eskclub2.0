@@ -6,9 +6,9 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Eskimos Club — eFootball Club Mode Platform",
+  title: "Eskimos 2.0 Club — eFootball Club Mode Platform",
   description:
-    "Join the Eskimos Club community. Track tournaments, player stats, and club achievements in our premium eFootball Club Mode platform.",
+    "Join the Eskimos 2.0 Club community. Track tournaments, player stats, and club achievements in our premium eFootball Club Mode platform.",
 };
 
 export const revalidate = 600;
@@ -194,7 +194,7 @@ export default async function Home() {
             <HeroItem delay={0.1}>
               <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tight mb-6 font-['Outfit',sans-serif]">
                 <span className="block text-white mb-2">Welcome to</span>
-                <span className="gradient-text-brand text-glow block">Eskimos&nbsp;Club</span>
+                <span className="gradient-text-brand text-glow block">Eskimos&nbsp;2.0</span>
               </h1>
             </HeroItem>
 
@@ -335,14 +335,14 @@ export default async function Home() {
               {/* Left copy */}
               <div>
                 <span className="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase text-[#FFB700] bg-[#FFB700]/10 border border-[#FFB700]/20 mb-5">
-                  Why Eskimos Club?
+                  Why Eskimos 2.0?
                 </span>
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-6 leading-tight font-['Outfit',sans-serif]">
                   Built for Serious <span className="gradient-text-brand">Competitors</span>
                 </h2>
                 <p className="text-[#707070] text-base sm:text-lg leading-relaxed mb-8">
                   Whether you&apos;re organising a major eFootball tournament or tracking your personal
-                  progress through the club ladder, Eskimos Club gives you the data, structure, and
+                  progress through the club ladder, Eskimos 2.0 gives you the data, structure, and
                   community you need to stay ahead.
                 </p>
 
@@ -456,7 +456,7 @@ export default async function Home() {
                   <span className="gradient-text-brand">Dominate</span>?
                 </h2>
                 <p className="text-[#A0A0A0] text-base sm:text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-                  Start tracking your eFootball journey with Eskimos Club and take your game to the next level.
+                  Start tracking your eFootball journey with Eskimos 2.0 and take your game to the next level.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
