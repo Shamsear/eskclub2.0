@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { RankAnimation, StaggerContainer, StaggerItem, AnimatedCounter } from '@/lib/animations';
+import { motion } from 'framer-motion';
 
 interface Player {
   id: number;
@@ -131,7 +131,7 @@ function LeaderboardRow({ entry, isExpanded, onToggle }: {
           {/* Points pill */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <div className="px-3 py-1.5 rounded-full text-sm font-black text-white" style={{ background: 'linear-gradient(135deg,#FF6600,#CC2900)' }}>
-              <AnimatedCounter value={stats.totalPoints} format={(v) => `${Math.round(v)} pts`} />
+              {stats.totalPoints} pts
             </div>
             <svg className={`w-4 h-4 text-[#333] transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -140,27 +140,35 @@ function LeaderboardRow({ entry, isExpanded, onToggle }: {
         </button>
 
         {isExpanded && (
-          <div className="px-4 pb-4 pt-3 border-t border-[#1A1A1A]">
-            <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
-              <MiniStat label="Matches" value={stats.matchesPlayed} color="text-white" />
-              <MiniStat label="Wins" value={stats.wins} color="text-green-400" />
-              <MiniStat label="Draws" value={stats.draws} color="text-[#555]" />
-              <MiniStat label="Losses" value={stats.losses} color="text-red-400" />
-              <MiniStat label="Goals Scored" value={stats.goalsScored} color="text-[#FF6600]" />
-              <MiniStat label="Goals Conceded" value={stats.goalsConceded} color="text-[#CC2900]" />
-              <MiniStat label="Goal Diff" value={stats.goalDifference > 0 ? `+${stats.goalDifference}` : stats.goalDifference} color={stats.goalDifference >= 0 ? 'text-green-400' : 'text-red-400'} />
-              <MiniStat label="Points" value={stats.totalPoints} color="text-[#FFB700]" />
-            </div>
-            <div>
-              <div className="flex items-center justify-between text-xs text-[#555] mb-2">
-                <span>Win Rate</span>
-                <span className="font-bold text-white">{stats.matchesPlayed > 0 ? `${((stats.wins / stats.matchesPlayed) * 100).toFixed(1)}%` : '0%'}</span>
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-3 border-t border-[#1A1A1A]">
+              <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
+                <MiniStat label="Matches" value={stats.matchesPlayed} color="text-white" />
+                <MiniStat label="Wins" value={stats.wins} color="text-green-400" />
+                <MiniStat label="Draws" value={stats.draws} color="text-[#555]" />
+                <MiniStat label="Losses" value={stats.losses} color="text-red-400" />
+                <MiniStat label="Goals Scored" value={stats.goalsScored} color="text-[#FF6600]" />
+                <MiniStat label="Goals Conceded" value={stats.goalsConceded} color="text-[#CC2900]" />
+                <MiniStat label="Goal Diff" value={stats.goalDifference > 0 ? `+${stats.goalDifference}` : stats.goalDifference} color={stats.goalDifference >= 0 ? 'text-green-400' : 'text-red-400'} />
+                <MiniStat label="Points" value={stats.totalPoints} color="text-[#FFB700]" />
               </div>
-              <div className="w-full rounded-full h-1.5 overflow-hidden" style={{ background: '#1A1A1A' }}>
-                <div className="h-full rounded-full transition-all duration-500" style={{ width: stats.matchesPlayed > 0 ? `${(stats.wins / stats.matchesPlayed) * 100}%` : '0%', background: 'linear-gradient(90deg,#FF6600,#FFB700)' }} />
+              <div>
+                <div className="flex items-center justify-between text-xs text-[#555] mb-2">
+                  <span>Win Rate</span>
+                  <span className="font-bold text-white">{stats.matchesPlayed > 0 ? `${((stats.wins / stats.matchesPlayed) * 100).toFixed(1)}%` : '0%'}</span>
+                </div>
+                <div className="w-full rounded-full h-1.5 overflow-hidden" style={{ background: '#1A1A1A' }}>
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: stats.matchesPlayed > 0 ? `${(stats.wins / stats.matchesPlayed) * 100}%` : '0%', background: 'linear-gradient(90deg,#FF6600,#FFB700)' }} />
+                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     );
@@ -219,7 +227,7 @@ function LeaderboardRow({ entry, isExpanded, onToggle }: {
         {/* Points pill */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="px-3 py-1.5 rounded-full text-sm font-black text-white" style={{ background: 'linear-gradient(135deg,#FF6600,#CC2900)' }}>
-            <AnimatedCounter value={stats.totalPoints} format={(v) => `${Math.round(v)} pts`} />
+            {stats.totalPoints} pts
           </div>
           <svg className={`w-4 h-4 text-[#333] transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -228,32 +236,40 @@ function LeaderboardRow({ entry, isExpanded, onToggle }: {
       </button>
 
       {isExpanded && (
-        <div className="px-4 pb-4 pt-3 border-t border-[#1A1A1A]" role="region" aria-label="Detailed statistics">
-          <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
-            <MiniStat label="Matches" value={stats.matchesPlayed} color="text-white" />
-            <MiniStat label="Wins" value={stats.wins} color="text-green-400" />
-            <MiniStat label="Draws" value={stats.draws} color="text-[#555]" />
-            <MiniStat label="Losses" value={stats.losses} color="text-red-400" />
-            <MiniStat label="Goals Scored" value={stats.goalsScored} color="text-[#FF6600]" />
-            <MiniStat label="Goals Conceded" value={stats.goalsConceded} color="text-[#CC2900]" />
-            <MiniStat label="Goal Diff" value={stats.goalDifference > 0 ? `+${stats.goalDifference}` : stats.goalDifference} color={stats.goalDifference >= 0 ? 'text-green-400' : 'text-red-400'} />
-            <MiniStat label="Points" value={stats.totalPoints} color="text-[#FFB700]" />
-          </div>
-          <div>
-            <div className="flex items-center justify-between text-xs text-[#555] mb-2">
-              <span>Win Rate</span>
-              <span className="font-bold text-white">{stats.matchesPlayed > 0 ? `${((stats.wins / stats.matchesPlayed) * 100).toFixed(1)}%` : '0%'}</span>
+        <motion.div 
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="overflow-hidden"
+        >
+          <div className="px-4 pb-4 pt-3 border-t border-[#1A1A1A]" role="region" aria-label="Detailed statistics">
+            <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
+              <MiniStat label="Matches" value={stats.matchesPlayed} color="text-white" />
+              <MiniStat label="Wins" value={stats.wins} color="text-green-400" />
+              <MiniStat label="Draws" value={stats.draws} color="text-[#555]" />
+              <MiniStat label="Losses" value={stats.losses} color="text-red-400" />
+              <MiniStat label="Goals Scored" value={stats.goalsScored} color="text-[#FF6600]" />
+              <MiniStat label="Goals Conceded" value={stats.goalsConceded} color="text-[#CC2900]" />
+              <MiniStat label="Goal Diff" value={stats.goalDifference > 0 ? `+${stats.goalDifference}` : stats.goalDifference} color={stats.goalDifference >= 0 ? 'text-green-400' : 'text-red-400'} />
+              <MiniStat label="Points" value={stats.totalPoints} color="text-[#FFB700]" />
             </div>
-            <div className="w-full rounded-full h-1.5 overflow-hidden" style={{ background: '#1A1A1A' }}>
-              <div className="h-full rounded-full transition-all duration-500"
-                style={{ width: stats.matchesPlayed > 0 ? `${(stats.wins / stats.matchesPlayed) * 100}%` : '0%', background: 'linear-gradient(90deg,#FF6600,#FFB700)' }}
-                role="progressbar"
-                aria-valuenow={stats.matchesPlayed > 0 ? (stats.wins / stats.matchesPlayed) * 100 : 0}
-                aria-valuemin={0} aria-valuemax={100}
-              />
+            <div>
+              <div className="flex items-center justify-between text-xs text-[#555] mb-2">
+                <span>Win Rate</span>
+                <span className="font-bold text-white">{stats.matchesPlayed > 0 ? `${((stats.wins / stats.matchesPlayed) * 100).toFixed(1)}%` : '0%'}</span>
+              </div>
+              <div className="w-full rounded-full h-1.5 overflow-hidden" style={{ background: '#1A1A1A' }}>
+                <div className="h-full rounded-full transition-all duration-500"
+                  style={{ width: stats.matchesPlayed > 0 ? `${(stats.wins / stats.matchesPlayed) * 100}%` : '0%', background: 'linear-gradient(90deg,#FF6600,#FFB700)' }}
+                  role="progressbar"
+                  aria-valuenow={stats.matchesPlayed > 0 ? (stats.wins / stats.matchesPlayed) * 100 : 0}
+                  aria-valuemin={0} aria-valuemax={100}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
@@ -281,20 +297,21 @@ export default function LeaderboardStream({ tournament, rankings }: LeaderboardS
   }
 
   return (
-    <StaggerContainer speed="fast">
-      <div className="space-y-2">
-        {rankings.map((entry) => (
-          <StaggerItem key={entry.isTeam ? `team-${entry.team?.clubId}-${entry.team?.playerA?.id}-${entry.team?.playerB?.id}` : `player-${entry.player?.id}`}>
-            <RankAnimation currentRank={entry.rank}>
-              <LeaderboardRow
-                entry={entry}
-                isExpanded={expandedRows.has(entry.rank)}
-                onToggle={() => toggleRow(entry.rank)}
-              />
-            </RankAnimation>
-          </StaggerItem>
-        ))}
-      </div>
-    </StaggerContainer>
+    <div className="space-y-2">
+      {rankings.map((entry, index) => (
+        <motion.div 
+          key={entry.isTeam ? `team-${entry.team?.clubId}-${entry.team?.playerA?.id}-${entry.team?.playerB?.id}` : `player-${entry.player?.id}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: Math.min(index * 0.02, 0.5) }}
+        >
+          <LeaderboardRow
+            entry={entry}
+            isExpanded={expandedRows.has(entry.rank)}
+            onToggle={() => toggleRow(entry.rank)}
+          />
+        </motion.div>
+      ))}
+    </div>
   );
 }

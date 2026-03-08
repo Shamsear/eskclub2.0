@@ -38,11 +38,61 @@ async function getLeaderboardData(id: number): Promise<any> {
       return { tournament: { id: tournament.id, name: tournament.name }, rankings: enriched.map((e, i) => ({ rank: i + 1, isTeam: true, team: { clubId: e.clubId, clubName: e.club?.name || 'Team', clubLogo: e.club?.logo, playerA: e.playerA, playerB: e.playerB }, player: null, stats: { matchesPlayed: e.matchesPlayed, wins: e.wins, draws: e.draws, losses: e.losses, goalsScored: e.goalsScored, goalsConceded: e.goalsConceded, goalDifference: e.goalDifference, totalPoints: e.totalPoints } })) };
     }
 
-    const stats = await prisma.tournamentPlayerStats.findMany({ where: { tournamentId: id }, include: { player: { select: { id: true, name: true, photo: true, club: { select: { id: true, name: true, logo: true } } } } }, orderBy: [{ totalPoints: 'desc' }, { goalsScored: 'desc' }, { goalsConceded: 'asc' }] });
+    const stats = await prisma.tournamentPlayerStats.findMany({ 
+      where: { tournamentId: id }, 
+      include: { 
+        player: { 
+          select: { 
+            id: true, 
+            name: true, 
+            photo: true, 
+            club: { 
+              select: { 
+                id: true, 
+                name: true, 
+                logo: true 
+              } 
+            } 
+          } 
+        } 
+      }, 
+      orderBy: [
+        { totalPoints: 'desc' }, 
+        { goalsScored: 'desc' }, 
+        { goalsConceded: 'asc' }
+      ] 
+    });
+    
     const withDiff = stats.map(e => ({ ...e, goalDifference: e.goalsScored - e.goalsConceded }));
     withDiff.sort((a, b) => b.totalPoints - a.totalPoints || b.goalDifference - a.goalDifference || b.goalsScored - a.goalsScored);
-    return { tournament, rankings: withDiff.map((e, i) => ({ rank: i + 1, isTeam: false, team: null, player: { id: e.player.id, name: e.player.name, photo: e.player.photo, club: e.player.club }, stats: { matchesPlayed: e.matchesPlayed, wins: e.wins, draws: e.draws, losses: e.losses, goalsScored: e.goalsScored, goalsConceded: e.goalsConceded, goalDifference: e.goalDifference, totalPoints: e.totalPoints } })) };
-  } catch (e) { console.error(e); return null; }
+    
+    const rankings = withDiff.map((e, i) => ({ 
+      rank: i + 1, 
+      isTeam: false, 
+      team: null, 
+      player: { 
+        id: e.player.id, 
+        name: e.player.name, 
+        photo: e.player.photo, 
+        club: e.player.club 
+      }, 
+      stats: { 
+        matchesPlayed: e.matchesPlayed, 
+        wins: e.wins, 
+        draws: e.draws, 
+        losses: e.losses, 
+        goalsScored: e.goalsScored, 
+        goalsConceded: e.goalsConceded, 
+        goalDifference: e.goalDifference, 
+        totalPoints: e.totalPoints 
+      } 
+    }));
+    
+    return { tournament, rankings };
+  } catch (e) { 
+    console.error('Error fetching leaderboard data:', e); 
+    return null; 
+  }
 }
 
 /* ──────── Dark stat card ──────── */
