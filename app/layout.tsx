@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     default: "Eskimos 2.0 - Club Mode",
     template: "%s | Eskimos 2.0"
   },
-  description: "Manage sports clubs, members, tournaments, and hierarchies with Eskimos 2.0 Club Mode",
+  description: "Manage sports clubs, members, tournaments, and hierarchies with Eskimos 2.0",
 };
 
 export default function RootLayout({

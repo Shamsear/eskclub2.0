@@ -6,9 +6,9 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Eskimos 2.0 Club — eFootball Club Mode Platform",
+  title: "Eskimos 2.0 — eFootball Club Mode Platform",
   description:
-    "Join the Eskimos 2.0 Club community. Track tournaments, player stats, and club achievements in our premium eFootball Club Mode platform.",
+    "Join the Eskimos 2.0 community. Track tournaments, player stats, and club achievements in our premium eFootball Club Mode platform.",
 };
 
 export const revalidate = 600;
