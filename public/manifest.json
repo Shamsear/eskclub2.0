@@ -1,0 +1,22 @@
+{
+  "name": "Eskimos - Club Mode",
+  "short_name": "Eskimos",
+  "description": "Manage sports clubs, members, tournaments, and hierarchies",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
