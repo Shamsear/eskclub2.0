@@ -13,7 +13,9 @@ type MatchOutcome = 'WIN' | 'DRAW' | 'LOSS';
 
 // Validation schema for a single match result
 const matchResultSchema = z.object({
-  playerId: z.number().int().positive("Player must be selected"),
+  playerId: z.number().int().optional().refine((val) => val === undefined || val === 0 || val > 0, {
+    message: "Player ID must be positive if provided",
+  }),
   outcome: z.enum(['WIN', 'DRAW', 'LOSS'], {
     errorMap: () => ({ message: "Outcome must be selected" }),
   }),
@@ -28,8 +30,8 @@ const matchSchema = z.object({
   }),
   results: z.array(matchResultSchema).min(1, "At least one player result is required"),
 }).refine((data) => {
-  // Check for duplicate player IDs
-  const playerIds = data.results.map(r => r.playerId);
+  // Check for duplicate player IDs (excluding 0 which means no player selected)
+  const playerIds = data.results.map(r => r.playerId).filter(id => id && id > 0);
   const uniquePlayerIds = new Set(playerIds);
   return playerIds.length === uniquePlayerIds.size;
 }, {
@@ -45,7 +47,7 @@ interface Participant {
 }
 
 interface PlayerResult {
-  playerId: number;
+  playerId: number | null;
   outcome: MatchOutcome | '';
   goalsScored: number;
   goalsConceded: number;
@@ -157,21 +159,21 @@ export function MatchResultForm({
   const [playerResults, setPlayerResults] = useState<PlayerResult[]>(
     initialData?.results.length 
       ? initialData.results.map(r => ({
-          playerId: r.playerId,
+          playerId: r.playerId || null,
           outcome: r.outcome as MatchOutcome,
           goalsScored: r.goalsScored,
           goalsConceded: r.goalsConceded,
         }))
       : matchFormat === 'DOUBLES'
         ? [
-            { playerId: 0, outcome: '', goalsScored: 0, goalsConceded: 0 },
-            { playerId: 0, outcome: '', goalsScored: 0, goalsConceded: 0 },
-            { playerId: 0, outcome: '', goalsScored: 0, goalsConceded: 0 },
-            { playerId: 0, outcome: '', goalsScored: 0, goalsConceded: 0 }
+            { playerId: null, outcome: '', goalsScored: 0, goalsConceded: 0 },
+            { playerId: null, outcome: '', goalsScored: 0, goalsConceded: 0 },
+            { playerId: null, outcome: '', goalsScored: 0, goalsConceded: 0 },
+            { playerId: null, outcome: '', goalsScored: 0, goalsConceded: 0 }
           ]
         : [
-            { playerId: 0, outcome: '', goalsScored: 0, goalsConceded: 0 },
-            { playerId: 0, outcome: '', goalsScored: 0, goalsConceded: 0 }
+            { playerId: null, outcome: '', goalsScored: 0, goalsConceded: 0 },
+            { playerId: null, outcome: '', goalsScored: 0, goalsConceded: 0 }
           ]
   );
 
@@ -319,7 +321,7 @@ export function MatchResultForm({
 
   // Add a new player result entry
   const addPlayerResult = () => {
-    setPlayerResults([...playerResults, { playerId: 0, outcome: '', goalsScored: 0, goalsConceded: 0 }]);
+    setPlayerResults([...playerResults, { playerId: null, outcome: '', goalsScored: 0, goalsConceded: 0 }]);
   };
 
   // Remove a player result entry
@@ -475,15 +477,17 @@ export function MatchResultForm({
           stageId: selectedStageId,
           stageName: selectedStageId ? stages.find(s => s.id === selectedStageId)?.name : null,
           walkoverWinnerId: walkoverWinnerId,
-          results: playerResults.map((r, idx) => ({
-            playerId: r.playerId,
-            outcome: r.outcome,
-            goalsScored: r.goalsScored,
-            goalsConceded: r.goalsConceded,
-            ...(pointOverrides[idx]?.enabled && {
-              customPoints: pointOverrides[idx].customPoints,
-            }),
-          })),
+          results: playerResults
+            .filter(r => r.playerId !== null && r.playerId > 0) // Only include results with valid player IDs
+            .map((r, idx) => ({
+              playerId: r.playerId,
+              outcome: r.outcome,
+              goalsScored: r.goalsScored,
+              goalsConceded: r.goalsConceded,
+              ...(pointOverrides[idx]?.enabled && {
+                customPoints: pointOverrides[idx].customPoints,
+              }),
+            })),
         }),
       });
 
@@ -568,8 +572,8 @@ export function MatchResultForm({
   // Get available players for a specific result index (exclude already selected players)
   const getAvailablePlayers = (currentIndex: number): Participant[] => {
     const selectedPlayerIds = playerResults
-      .map((r, i) => i !== currentIndex ? r.playerId : 0)
-      .filter(id => id > 0);
+      .map((r, i) => i !== currentIndex ? r.playerId : null)
+      .filter(id => id !== null && id > 0);
     
     let availablePlayers = participants.filter(p => !selectedPlayerIds.includes(p.id));
     
@@ -1111,21 +1115,24 @@ export function MatchResultForm({
                   {/* Player Selection */}
                   <div>
                     <label htmlFor={`player-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
-                      Player *
+                      Player {index === 1 && <span className="text-gray-500 text-xs">(Optional - leave as "External Player" if opponent is from outside club)</span>}
                     </label>
                     <select
                       id={`player-${index}`}
-                      value={result.playerId}
-                      onChange={(e) => updatePlayerResult(index, 'playerId', parseInt(e.target.value))}
+                      value={result.playerId || 0}
+                      onChange={(e) => {
+                        const value = e.target.value === '' || e.target.value === '0' ? null : parseInt(e.target.value);
+                        updatePlayerResult(index, 'playerId', value);
+                      }}
                       className={`block w-full px-3 py-2.5 min-h-[44px] border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors text-base text-gray-900 bg-white ${
                         errors[`results.${index}.playerId`]
                           ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                           : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
                       }`}
-                      required
+                      required={index === 0}
                     >
-                      <option value="0">Select a player</option>
-                      {result.playerId > 0 && !availablePlayers.find(p => p.id === result.playerId) && (
+                      <option value="0">{index === 0 ? 'Select a player' : 'External Player (not in club)'}</option>
+                      {result.playerId && result.playerId > 0 && !availablePlayers.find(p => p.id === result.playerId) && (
                         <option value={result.playerId}>
                           {participants.find(p => p.id === result.playerId)?.name}
                         </option>
@@ -1138,6 +1145,14 @@ export function MatchResultForm({
                     </select>
                     {errors[`results.${index}.playerId`] && (
                       <p className="mt-1 text-sm text-red-600">{errors[`results.${index}.playerId`]}</p>
+                    )}
+                    {index === 1 && !result.playerId && (
+                      <p className="mt-1 text-xs text-blue-600 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Stats will only be tracked for Player A
+                      </p>
                     )}
                   </div>
 

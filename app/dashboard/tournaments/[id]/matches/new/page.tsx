@@ -134,7 +134,7 @@ export default async function AddMatchResultPage({
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">Add Match Result</h1>
               <p className="text-pink-100 text-sm mt-1">
-                Record a {tournament.matchFormat === 'DOUBLES' ? '2v2 team' : '1v1'} match result for this tournament
+                Record a {tournament.matchFormat === 'DOUBLES' ? '2v2 team' : '1v1'} match result. Second player is optional for matches against external opponents.
               </p>
             </div>
           </div>
@@ -153,7 +153,7 @@ export default async function AddMatchResultPage({
             <div>
               <h3 className="font-semibold text-gray-900 text-sm">Select Players</h3>
               <p className="text-xs text-gray-600 mt-1">
-                Choose {tournament.matchFormat === 'DOUBLES' ? 'four participants (2 teams of 2)' : 'two participants for this 1v1 match'}
+                Choose {tournament.matchFormat === 'DOUBLES' ? 'four participants (2 teams of 2)' : 'at least one participant. Second player is optional for external opponents.'}
               </p>
             </div>
           </div>

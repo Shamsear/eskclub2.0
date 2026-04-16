@@ -46,7 +46,7 @@ interface ParsedMatch {
 interface FormMatch extends ParsedMatch {
   id: number;
   playerAId: number;
-  playerBId: number;
+  playerBId: number | null;
   playerCId?: number; // For doubles
   playerDId?: number; // For doubles
 }
@@ -678,9 +678,8 @@ ${participants.map(p => p.name).join(', ')}`;
       if (!match.playerAId || match.playerAId === 0) {
         validationErrors.push(`Match ${index + 1}: Player A is required`);
       }
-      if (!match.playerBId || match.playerBId === 0) {
-        validationErrors.push(`Match ${index + 1}: Player B is required`);
-      }
+      // Player B is now optional for singles matches
+      // No validation error if Player B is not selected
       if (isDoublesFormat) {
         if (!match.playerCId || match.playerCId === 0) {
           validationErrors.push(`Match ${index + 1}: Player C is required`);
@@ -695,7 +694,8 @@ ${participants.map(p => p.name).join(', ')}`;
           validationErrors.push(`Match ${index + 1}: All players must be different`);
         }
       } else {
-        if (match.playerAId === match.playerBId && match.playerAId !== 0) {
+        // For singles, only check if both players are selected and they're the same
+        if (match.playerAId && match.playerBId && match.playerAId === match.playerBId && match.playerAId !== 0) {
           validationErrors.push(`Match ${index + 1}: Players must be different`);
         }
       }
@@ -895,18 +895,21 @@ ${participants.map(p => p.name).join(', ')}`;
                     {/* Player B */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {isDoublesFormat ? 'Team 1 - Player B' : 'Player B'}
+                        {isDoublesFormat ? 'Team 1 - Player B' : 'Player B'} {!isDoublesFormat && <span className="text-xs text-gray-500">(Optional - External Player)</span>}
                       </label>
                       <select
-                        value={String(match.playerBId)}
-                        onChange={(e) => updateFormMatch(match.id, 'playerBId', Number(e.target.value))}
+                        value={String(match.playerBId || 0)}
+                        onChange={(e) => updateFormMatch(match.id, 'playerBId', Number(e.target.value) || null)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-white text-gray-900"
                       >
-                        <option value="0">Select Player B</option>
+                        <option value="0">{isDoublesFormat ? 'Select Player B' : 'External Player (not in club)'}</option>
                         {getAvailablePlayersForMatch(match, 'B').map(p => (
                           <option key={p.id} value={String(p.id)}>{p.name}</option>
                         ))}
                       </select>
+                      {!isDoublesFormat && !match.playerBId && (
+                        <p className="mt-1 text-xs text-blue-600">Stats will only be tracked for Player A</p>
+                      )}
                     </div>
 
                     {/* Team 2 Header for Doubles */}
@@ -1124,7 +1127,7 @@ ${participants.map(p => p.name).join(', ')}`;
                   </div>
 
                   {/* Match Outcome Display */}
-                  {match.playerAId !== 0 && match.playerBId !== 0 && (
+                  {match.playerAId !== 0 && (
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-700">Match Outcome:</span>
