@@ -747,20 +747,20 @@ export function MatchResultForm({
               setWalkoverWinnerId(parseInt(value));
             }
           }}
-          disabled={playerResults.filter(r => r.playerId > 0).length < 2}
+          disabled={playerResults.filter(r => r.playerId && r.playerId > 0).length < 2}
           className="block w-full px-3 py-2.5 border border-orange-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
           <option value="">Normal Match (no walkover)</option>
           <option value="0">Both Players Forfeited (no points awarded)</option>
           {playerResults.map((result, index) => 
-            result.playerId > 0 && (
+            result.playerId && result.playerId > 0 && (
               <option key={`player-${result.playerId}-${index}`} value={result.playerId}>
                 {participants.find(p => p.id === result.playerId)?.name || `Player ${index + 1}`} Won by Walkover
               </option>
             )
           )}
         </select>
-        {playerResults.filter(r => r.playerId > 0).length < 2 && (
+        {playerResults.filter(r => r.playerId && r.playerId > 0).length < 2 && (
           <p className="mt-2 text-sm text-orange-600">
             ⚠️ Please select both players before choosing a walkover option
           </p>

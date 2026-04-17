@@ -22,7 +22,7 @@ interface MatchListProps {
         id: number;
         name: string;
         photo: string | null;
-      };
+      } | null;
     }>;
     teamResults?: Array<{
       id: number;
@@ -391,31 +391,53 @@ export function MatchList({ tournamentId, matches, isLoading = false }: MatchLis
                 {/* Player 1 */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    {player1?.player.photo ? (
-                      <img
-                        src={player1.player.photo}
-                        alt={player1.player.name}
-                        className="h-12 w-12 rounded-xl object-cover ring-2 ring-gray-100"
-                      />
+                    {player1?.player ? (
+                      <>
+                        {player1.player.photo ? (
+                          <img
+                            src={player1.player.photo}
+                            alt={player1.player.name}
+                            className="h-12 w-12 rounded-xl object-cover ring-2 ring-gray-100"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center ring-2 ring-gray-100">
+                            <span className="text-lg font-bold text-blue-700">
+                              {player1.player.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 truncate">{player1.player.name}</h4>
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                            player1.outcome === "WIN"
+                              ? "bg-green-100 text-green-800"
+                              : player1.outcome === "DRAW"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}>
+                            {player1.outcome}
+                          </span>
+                        </div>
+                      </>
                     ) : (
-                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center ring-2 ring-gray-100">
-                        <span className="text-lg font-bold text-blue-700">
-                          {player1?.player.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+                      <>
+                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ring-2 ring-gray-100">
+                          <span className="text-lg font-bold text-gray-600">?</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 truncate">External Player</h4>
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                            player1?.outcome === "WIN"
+                              ? "bg-green-100 text-green-800"
+                              : player1?.outcome === "DRAW"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}>
+                            {player1?.outcome}
+                          </span>
+                        </div>
+                      </>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 truncate">{player1?.player.name}</h4>
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                        player1?.outcome === "WIN"
-                          ? "bg-green-100 text-green-800"
-                          : player1?.outcome === "DRAW"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}>
-                        {player1?.outcome}
-                      </span>
-                    </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1.5">
@@ -453,31 +475,53 @@ export function MatchList({ tournamentId, matches, isLoading = false }: MatchLis
                 {/* Player 2 */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3 flex-row-reverse">
-                    {player2?.player.photo ? (
-                      <img
-                        src={player2.player.photo}
-                        alt={player2.player.name}
-                        className="h-12 w-12 rounded-xl object-cover ring-2 ring-gray-100"
-                      />
+                    {player2?.player ? (
+                      <>
+                        {player2.player.photo ? (
+                          <img
+                            src={player2.player.photo}
+                            alt={player2.player.name}
+                            className="h-12 w-12 rounded-xl object-cover ring-2 ring-gray-100"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center ring-2 ring-gray-100">
+                            <span className="text-lg font-bold text-purple-700">
+                              {player2.player.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0 text-right">
+                          <h4 className="font-semibold text-gray-900 truncate">{player2.player.name}</h4>
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                            player2.outcome === "WIN"
+                              ? "bg-green-100 text-green-800"
+                              : player2.outcome === "DRAW"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}>
+                            {player2.outcome}
+                          </span>
+                        </div>
+                      </>
                     ) : (
-                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center ring-2 ring-gray-100">
-                        <span className="text-lg font-bold text-purple-700">
-                          {player2?.player.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+                      <>
+                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ring-2 ring-gray-100">
+                          <span className="text-lg font-bold text-gray-600">?</span>
+                        </div>
+                        <div className="flex-1 min-w-0 text-right">
+                          <h4 className="font-semibold text-gray-900 truncate">External Player</h4>
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                            player2?.outcome === "WIN"
+                              ? "bg-green-100 text-green-800"
+                              : player2?.outcome === "DRAW"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}>
+                            {player2?.outcome}
+                          </span>
+                        </div>
+                      </>
                     )}
-                    <div className="flex-1 min-w-0 text-right">
-                      <h4 className="font-semibold text-gray-900 truncate">{player2?.player.name}</h4>
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                        player2?.outcome === "WIN"
-                          ? "bg-green-100 text-green-800"
-                          : player2?.outcome === "DRAW"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}>
-                        {player2?.outcome}
-                      </span>
-                    </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm justify-end">
                     <div className="mr-auto">

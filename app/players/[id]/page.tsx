@@ -194,10 +194,16 @@ async function getPlayerData(id: number) {
         goalsConceded: result.goalsConceded,
         pointsEarned: result.pointsEarned,
         isTeamMatch: false,
-        opponent: opponent ? {
+        opponent: opponent && opponent.player ? {
           id: opponent.player.id,
           name: opponent.player.name,
           photo: opponent.player.photo,
+          goalsScored: opponent.goalsScored,
+          goalsConceded: opponent.goalsConceded,
+        } : opponent ? {
+          id: 0,
+          name: 'External Player',
+          photo: null,
           goalsScored: opponent.goalsScored,
           goalsConceded: opponent.goalsConceded,
         } : null,
