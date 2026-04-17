@@ -94,23 +94,25 @@ function RoleBadge({ role }: { role: string }) {
 function MemberCard({ 
   member, 
   clubId, 
-  primaryRole 
+  primaryRole,
+  onRemove
 }: { 
   member: Member; 
   clubId: number; 
   primaryRole: string;
+  onRemove: (memberId: number, memberName: string) => void;
 }) {
   const colors = roleColors[primaryRole as keyof typeof roleColors] || roleColors.PLAYER;
   const memberRoles = member.roles || [];
   const hasMultipleRoles = memberRoles.length > 1;
   
   return (
-    <Link 
-      href={`/dashboard/clubs/${clubId}/players/${member.id}`}
-      className={`group block p-4 ${colors.cardBg} rounded-xl ${colors.cardHover} transition-all cursor-pointer border ${colors.border} hover:shadow-lg hover:scale-[1.01]`}
-    >
+    <div className={`group p-4 ${colors.cardBg} rounded-xl transition-all border ${colors.border} hover:shadow-lg`}>
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
+        <Link 
+          href={`/dashboard/clubs/${clubId}/players/${member.id}`}
+          className="flex items-start gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+        >
           {/* Avatar */}
           <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors.bg} flex items-center justify-center flex-shrink-0 shadow-sm`}>
             {member.photo ? (
@@ -153,24 +155,23 @@ function MemberCard({
               ))}
             </div>
           </div>
-        </div>
+        </Link>
         
-        {/* Arrow Icon */}
-        <svg
-          className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all flex-shrink-0"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+        {/* Remove Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(member.id, member.name);
+          }}
+          className="flex-shrink-0 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          title="Remove from club"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5l7 7-7 7"
-          />
-        </svg>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -178,6 +179,18 @@ export function ClubDetails({ clubData }: ClubDetailsProps) {
   const router = useRouter();
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [removePlayerDialog, setRemovePlayerDialog] = useState<{
+    isOpen: boolean;
+    playerId: number | null;
+    playerName: string;
+    action: 'free-agent' | 'delete' | null;
+  }>({
+    isOpen: false,
+    playerId: null,
+    playerName: '',
+    action: null,
+  });
+  const [isRemovingPlayer, setIsRemovingPlayer] = useState(false);
 
   const { club, managers, mentors, captains, players, tournamentsCount } = clubData;
 
@@ -205,6 +218,53 @@ export function ClubDetails({ clubData }: ClubDetailsProps) {
       alert(err instanceof Error ? err.message : 'Failed to delete club');
       setIsDeleting(false);
       setDeleteDialog(false);
+    }
+  };
+
+  const handleRemovePlayer = (playerId: number, playerName: string) => {
+    setRemovePlayerDialog({
+      isOpen: true,
+      playerId,
+      playerName,
+      action: null,
+    });
+  };
+
+  const handleRemovePlayerConfirm = async () => {
+    if (!removePlayerDialog.playerId || !removePlayerDialog.action) return;
+
+    setIsRemovingPlayer(true);
+    try {
+      if (removePlayerDialog.action === 'free-agent') {
+        // Make player a free agent (remove from club)
+        const response = await fetch(`/api/players/${removePlayerDialog.playerId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clubId: null, isFreeAgent: true }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to remove player from club');
+        }
+      } else if (removePlayerDialog.action === 'delete') {
+        // Delete player completely
+        const response = await fetch(`/api/players/${removePlayerDialog.playerId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to delete player');
+        }
+      }
+
+      setRemovePlayerDialog({ isOpen: false, playerId: null, playerName: '', action: null });
+      router.refresh();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to remove player');
+    } finally {
+      setIsRemovingPlayer(false);
     }
   };
 
@@ -410,6 +470,7 @@ export function ClubDetails({ clubData }: ClubDetailsProps) {
                         member={member} 
                         clubId={club.id} 
                         primaryRole={primaryRole}
+                        onRemove={handleRemovePlayer}
                       />
                     );
                   });
@@ -430,6 +491,102 @@ export function ClubDetails({ clubData }: ClubDetailsProps) {
         variant="danger"
         isLoading={isDeleting}
       />
+
+      {/* Custom Remove Player Dialog */}
+      {removePlayerDialog.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Remove Player</h3>
+                <p className="text-sm text-gray-600">Choose how to remove {removePlayerDialog.playerName}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => setRemovePlayerDialog({ ...removePlayerDialog, action: 'free-agent' })}
+                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                  removePlayerDialog.action === 'free-agent'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center ${
+                    removePlayerDialog.action === 'free-agent'
+                      ? 'border-blue-500 bg-blue-500'
+                      : 'border-gray-300'
+                  }`}>
+                    {removePlayerDialog.action === 'free-agent' && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900 mb-1">Make Free Agent</div>
+                    <div className="text-sm text-gray-600">Remove from club but keep player data. They can join another club later.</div>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setRemovePlayerDialog({ ...removePlayerDialog, action: 'delete' })}
+                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                  removePlayerDialog.action === 'delete'
+                    ? 'border-red-500 bg-red-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center ${
+                    removePlayerDialog.action === 'delete'
+                      ? 'border-red-500 bg-red-500'
+                      : 'border-gray-300'
+                  }`}>
+                    {removePlayerDialog.action === 'delete' && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900 mb-1">Delete Completely</div>
+                    <div className="text-sm text-gray-600">Permanently delete player and all their data. This cannot be undone.</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setRemovePlayerDialog({ isOpen: false, playerId: null, playerName: '', action: null })}
+                disabled={isRemovingPlayer}
+                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRemovePlayerConfirm}
+                disabled={!removePlayerDialog.action || isRemovingPlayer}
+                className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  removePlayerDialog.action === 'delete'
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                {isRemovingPlayer ? 'Processing...' : removePlayerDialog.action === 'delete' ? 'Delete Player' : 'Make Free Agent'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

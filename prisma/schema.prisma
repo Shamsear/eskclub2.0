@@ -58,7 +58,7 @@ model Player {
   clubStats              PlayerClubStats[]
   roles                  PlayerRole[]
   transferHistory        PlayerTransfer[]        @relation("PlayerTransfers")
-  club                   Club?                   @relation(fields: [clubId], references: [id])
+  club                   Club?                   @relation(fields: [clubId], references: [id], onDelete: SetNull)
   tournamentParticipants TournamentParticipant[]
   tournamentStats        TournamentPlayerStats[]
 
@@ -85,7 +85,7 @@ model PlayerClubStats {
   totalPoints   Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  club          Club?     @relation("ClubPlayerStats", fields: [clubId], references: [id])
+  club          Club?     @relation("ClubPlayerStats", fields: [clubId], references: [id], onDelete: Cascade)
   player        Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([playerId])
@@ -102,9 +102,9 @@ model PlayerTransfer {
   transferDate DateTime @default(now())
   notes        String?
   createdAt    DateTime @default(now())
-  fromClub     Club?    @relation("TransfersFrom", fields: [fromClubId], references: [id])
+  fromClub     Club?    @relation("TransfersFrom", fields: [fromClubId], references: [id], onDelete: SetNull)
   player       Player   @relation("PlayerTransfers", fields: [playerId], references: [id], onDelete: Cascade)
-  toClub       Club?    @relation("TransfersTo", fields: [toClubId], references: [id])
+  toClub       Club?    @relation("TransfersTo", fields: [toClubId], references: [id], onDelete: SetNull)
 
   @@index([playerId])
   @@index([fromClubId])

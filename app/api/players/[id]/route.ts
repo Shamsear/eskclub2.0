@@ -230,3 +230,72 @@ export async function DELETE(
     );
   }
 }
+
+// PATCH /api/players/[id] - Partially update a player (e.g., make free agent)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+    const playerId = parseInt(id);
+    
+    if (isNaN(playerId)) {
+      return NextResponse.json(
+        { error: "Invalid player ID" },
+        { status: 400 }
+      );
+    }
+
+    // Check if player exists
+    const existingPlayer = await prisma.player.findUnique({
+      where: { id: playerId },
+    });
+
+    if (!existingPlayer) {
+      return NextResponse.json(
+        { error: "Player not found" },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json();
+    
+    // Update only the fields provided
+    const updateData: any = {};
+    
+    if (body.clubId !== undefined) {
+      updateData.clubId = body.clubId;
+    }
+    
+    if (body.isFreeAgent !== undefined) {
+      updateData.isFreeAgent = body.isFreeAgent;
+    }
+
+    const updatedPlayer = await prisma.player.update({
+      where: { id: playerId },
+      data: updateData,
+      include: {
+        roles: true,
+        club: true,
+      },
+    });
+
+    return NextResponse.json(updatedPlayer);
+  } catch (error) {
+    console.error("Error updating player:", error);
+    return NextResponse.json(
+      { error: "An unexpected error occurred while updating the player" },
+      { status: 500 }
+    );
+  }
+}
