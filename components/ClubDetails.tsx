@@ -177,7 +177,13 @@ function MemberCard({
 
 export function ClubDetails({ clubData }: ClubDetailsProps) {
   const router = useRouter();
-  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    playerAction: 'club-only' | 'club-and-players' | 'everything' | null;
+  }>({
+    isOpen: false,
+    playerAction: null,
+  });
   const [isDeleting, setIsDeleting] = useState(false);
   const [removePlayerDialog, setRemovePlayerDialog] = useState<{
     isOpen: boolean;
@@ -201,10 +207,51 @@ export function ClubDetails({ clubData }: ClubDetailsProps) {
   };
 
   const handleDelete = async () => {
+    if (!deleteDialog.playerAction) return;
+
     setIsDeleting(true);
     try {
+      if (deleteDialog.playerAction === 'club-only') {
+        // Make all players free agents before deleting club
+        const uniqueMemberIds = new Set<number>();
+        [...managers, ...mentors, ...captains, ...players].forEach(member => {
+          uniqueMemberIds.add(member.id);
+        });
+
+        // Update each player to be a free agent
+        const updatePromises = Array.from(uniqueMemberIds).map(playerId =>
+          fetch(`/api/players/${playerId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clubId: null, isFreeAgent: true }),
+          })
+        );
+
+        await Promise.all(updatePromises);
+      } else if (deleteDialog.playerAction === 'club-and-players') {
+        // Delete all players first
+        const uniqueMemberIds = new Set<number>();
+        [...managers, ...mentors, ...captains, ...players].forEach(member => {
+          uniqueMemberIds.add(member.id);
+        });
+
+        // Delete each player
+        const deletePromises = Array.from(uniqueMemberIds).map(playerId =>
+          fetch(`/api/players/${playerId}`, {
+            method: 'DELETE',
+          })
+        );
+
+        await Promise.all(deletePromises);
+      }
+      // For 'everything', cascade delete will handle it
+
       const response = await fetch(`/api/clubs/${club.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          deleteAction: deleteDialog.playerAction
+        }),
       });
 
       if (!response.ok) {
@@ -217,7 +264,7 @@ export function ClubDetails({ clubData }: ClubDetailsProps) {
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete club');
       setIsDeleting(false);
-      setDeleteDialog(false);
+      setDeleteDialog({ isOpen: false, playerAction: null });
     }
   };
 
@@ -337,7 +384,7 @@ export function ClubDetails({ clubData }: ClubDetailsProps) {
                 </button>
               </Link>
               <button 
-                onClick={() => setDeleteDialog(true)}
+                onClick={() => setDeleteDialog({ isOpen: true, playerAction: null })}
                 className="px-4 py-2 bg-red-500/90 backdrop-blur-sm text-white rounded-lg hover:bg-red-600 transition-all font-medium text-sm flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -480,17 +527,133 @@ export function ClubDetails({ clubData }: ClubDetailsProps) {
         </div>
       </div>
 
-      <ConfirmDialog
-        isOpen={deleteDialog}
-        onClose={() => setDeleteDialog(false)}
-        onConfirm={handleDelete}
-        title="Delete Club"
-        message={`Are you sure you want to delete "${club.name}"? This will permanently remove the club and all ${totalMembers} associated members (${managers.length} managers, ${mentors.length} mentors, ${captains.length} captains, ${players.length} players). This action cannot be undone.`}
-        confirmText="Delete Club"
-        cancelText="Cancel"
-        variant="danger"
-        isLoading={isDeleting}
-      />
+      {/* Custom Club Delete Dialog */}
+      {deleteDialog.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Delete Club</h3>
+                <p className="text-sm text-gray-600">Choose what to do with {totalMembers} member{totalMembers !== 1 ? 's' : ''}</p>
+              </div>
+            </div>
+
+            <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <p className="text-sm text-gray-700 mb-2">
+                <span className="font-semibold">Club:</span> {club.name}
+              </p>
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold">Members:</span> {totalMembers} total ({managers.length} managers, {mentors.length} mentors, {captains.length} captains, {players.length} players)
+              </p>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => setDeleteDialog({ ...deleteDialog, playerAction: 'club-only' })}
+                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                  deleteDialog.playerAction === 'club-only'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center ${
+                    deleteDialog.playerAction === 'club-only'
+                      ? 'border-blue-500 bg-blue-500'
+                      : 'border-gray-300'
+                  }`}>
+                    {deleteDialog.playerAction === 'club-only' && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900 mb-1">Delete Club Only</div>
+                    <div className="text-sm text-gray-600">Delete club but keep all members as free agents. Members can join other clubs. Tournaments and match history are preserved.</div>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setDeleteDialog({ ...deleteDialog, playerAction: 'club-and-players' })}
+                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                  deleteDialog.playerAction === 'club-and-players'
+                    ? 'border-orange-500 bg-orange-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center ${
+                    deleteDialog.playerAction === 'club-and-players'
+                      ? 'border-orange-500 bg-orange-500'
+                      : 'border-gray-300'
+                  }`}>
+                    {deleteDialog.playerAction === 'club-and-players' && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900 mb-1">Delete Club and Players</div>
+                    <div className="text-sm text-gray-600">Delete club and all members. Tournaments and match history are preserved but player references will be removed.</div>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setDeleteDialog({ ...deleteDialog, playerAction: 'everything' })}
+                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                  deleteDialog.playerAction === 'everything'
+                    ? 'border-red-500 bg-red-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center ${
+                    deleteDialog.playerAction === 'everything'
+                      ? 'border-red-500 bg-red-500'
+                      : 'border-gray-300'
+                  }`}>
+                    {deleteDialog.playerAction === 'everything' && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900 mb-1">Delete Everything</div>
+                    <div className="text-sm text-gray-600">Permanently delete club, all members, tournaments, and complete match history. This cannot be undone.</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteDialog({ isOpen: false, playerAction: null })}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={!deleteDialog.playerAction || isDeleting}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Club'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Custom Remove Player Dialog */}
       {removePlayerDialog.isOpen && (
