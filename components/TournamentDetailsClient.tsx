@@ -58,7 +58,7 @@ interface TournamentDetailsClientProps {
           id: number;
           name: string;
           photo: string | null;
-        };
+        } | null;
       }>;
       teamResults?: Array<{
         id: number;
