@@ -27,10 +27,10 @@ async function getPlayersLeaderboard(tournamentId?: string) {
       _sum: { pointsEarned: true, goalsScored: true, goalsConceded: true },
       _count: { id: true },
     });
-    const playerStats = await Promise.all(results.map(async (result) => {
-      const player = await prisma.player.findUnique({ where: { id: result.playerId }, include: { club: { select: { id: true, name: true, logo: true } } } });
+    const playerStats = await Promise.all(results.filter(r => r.playerId !== null).map(async (result) => {
+      const player = await prisma.player.findUnique({ where: { id: result.playerId! }, include: { club: { select: { id: true, name: true, logo: true } } } });
       if (!player) return null;
-      const outcomes = await prisma.matchResult.groupBy({ by: ['outcome'], where: { playerId: result.playerId, ...(tournamentId ? { match: { tournamentId: parseInt(tournamentId) } } : {}) }, _count: { id: true } });
+      const outcomes = await prisma.matchResult.groupBy({ by: ['outcome'], where: { playerId: result.playerId!, ...(tournamentId ? { match: { tournamentId: parseInt(tournamentId) } } : {}) }, _count: { id: true } });
       const wins = outcomes.find(o => o.outcome === 'WIN')?._count.id || 0;
       const draws = outcomes.find(o => o.outcome === 'DRAW')?._count.id || 0;
       const losses = outcomes.find(o => o.outcome === 'LOSS')?._count.id || 0;
