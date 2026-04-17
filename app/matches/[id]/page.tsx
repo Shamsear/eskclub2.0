@@ -136,13 +136,22 @@ async function getMatchData(id: string) {
         isTeamMatch: false,
       },
       results: match.results.map(result => ({
-        player: {
+        player: result.player ? {
           id: result.player.id,
           name: result.player.name,
           photo: result.player.photo,
           club: result.player.club || {
             id: 0,
             name: 'Free Agent',
+            logo: null,
+          },
+        } : {
+          id: 0,
+          name: 'External Player',
+          photo: null,
+          club: {
+            id: 0,
+            name: 'External',
             logo: null,
           },
         },
