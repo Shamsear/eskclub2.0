@@ -74,7 +74,7 @@ interface MatchResultFormProps {
     walkoverWinnerId?: number | null;
     results: Array<{
       id?: number;
-      playerId: number;
+      playerId: number | null;
       outcome: MatchOutcome | string;
       goalsScored: number;
       goalsConceded: number;
@@ -84,7 +84,7 @@ interface MatchResultFormProps {
         name: string;
         email?: string;
         photo?: string | null;
-      };
+      } | null;
     }>;
   };
   pointSystem?: {
