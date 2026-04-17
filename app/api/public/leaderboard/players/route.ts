@@ -22,9 +22,11 @@ export async function GET(request: NextRequest) {
     });
 
     const playerStats = await Promise.all(
-      results.map(async (result) => {
+      results
+        .filter(result => result.playerId !== null)
+        .map(async (result) => {
         const player = await prisma.player.findUnique({
-          where: { id: result.playerId },
+          where: { id: result.playerId! },
           include: {
             club: {
               select: {
@@ -41,7 +43,7 @@ export async function GET(request: NextRequest) {
         const outcomes = await prisma.matchResult.groupBy({
           by: ['outcome'],
           where: {
-            playerId: result.playerId,
+            playerId: result.playerId!,
             ...(tournamentId ? { match: { tournamentId: parseInt(tournamentId) } } : {}),
           },
           _count: {

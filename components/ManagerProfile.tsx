@@ -50,7 +50,7 @@ interface MatchResult {
         id: number;
         name: string;
         photo: string | null;
-      };
+      } | null;
     }>;
   };
 }
@@ -362,7 +362,7 @@ export function ManagerProfile({ manager, roleContext = 'manager', listPath, mat
           <div className="p-6">
             <div className="space-y-4">
               {matchResults.map((result) => {
-                const opponent = result.match.results.find(r => r.player.id !== manager.id);
+                const opponent = result.match.results.find(r => r.player?.id !== manager.id);
                 
                 return (
                   <div key={result.id} className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all group">
@@ -456,52 +456,95 @@ export function ManagerProfile({ manager, roleContext = 'manager', listPath, mat
                         {/* Opponent */}
                         {opponent && (
                           <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3 flex-row-reverse">
-                              {opponent.player.photo ? (
-                                <img
-                                  src={opponent.player.photo}
-                                  alt={opponent.player.name}
-                                  className="w-12 h-12 rounded-xl object-cover ring-2 ring-gray-100"
-                                />
-                              ) : (
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center ring-2 ring-gray-100">
-                                  <span className="text-lg font-bold text-purple-700">
-                                    {opponent.player.name.charAt(0).toUpperCase()}
-                                  </span>
+                            {opponent.player ? (
+                              <>
+                                <div className="flex items-center gap-3 mb-3 flex-row-reverse">
+                                  {opponent.player.photo ? (
+                                    <img
+                                      src={opponent.player.photo}
+                                      alt={opponent.player.name}
+                                      className="w-12 h-12 rounded-xl object-cover ring-2 ring-gray-100"
+                                    />
+                                  ) : (
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center ring-2 ring-gray-100">
+                                      <span className="text-lg font-bold text-purple-700">
+                                        {opponent.player.name.charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-0 text-right">
+                                    <h4 className="font-semibold text-gray-900 truncate">{opponent.player.name}</h4>
+                                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                                      opponent.outcome === "WIN"
+                                        ? "bg-green-100 text-green-800"
+                                        : opponent.outcome === "DRAW"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}>
+                                      {opponent.outcome}
+                                    </span>
+                                  </div>
                                 </div>
-                              )}
-                              <div className="flex-1 min-w-0 text-right">
-                                <h4 className="font-semibold text-gray-900 truncate">{opponent.player.name}</h4>
-                                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  opponent.outcome === "WIN"
-                                    ? "bg-green-100 text-green-800"
-                                    : opponent.outcome === "DRAW"
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}>
-                                  {opponent.outcome}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4 text-sm justify-end">
-                              <div className="mr-auto">
-                                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">
-                                  {opponent.pointsEarned} pts
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-gray-600">{opponent.goalsConceded} conceded</span>
-                                <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                                </svg>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-gray-600">{opponent.goalsScored} scored</span>
-                                <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                </svg>
-                              </div>
-                            </div>
+                                <div className="flex items-center gap-4 text-sm justify-end">
+                                  <div className="mr-auto">
+                                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">
+                                      {opponent.pointsEarned} pts
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-gray-600">{opponent.goalsConceded} conceded</span>
+                                    <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                                    </svg>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-gray-600">{opponent.goalsScored} scored</span>
+                                    <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex items-center gap-3 mb-3 flex-row-reverse">
+                                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ring-2 ring-gray-100">
+                                    <span className="text-lg font-bold text-gray-600">?</span>
+                                  </div>
+                                  <div className="flex-1 min-w-0 text-right">
+                                    <h4 className="font-semibold text-gray-900 truncate">External Player</h4>
+                                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                                      opponent.outcome === "WIN"
+                                        ? "bg-green-100 text-green-800"
+                                        : opponent.outcome === "DRAW"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}>
+                                      {opponent.outcome}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm justify-end">
+                                  <div className="mr-auto">
+                                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">
+                                      {opponent.pointsEarned} pts
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-gray-600">{opponent.goalsConceded} conceded</span>
+                                    <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                                    </svg>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-gray-600">{opponent.goalsScored} scored</span>
+                                    <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>

@@ -519,7 +519,7 @@ export async function PUT(
     });
 
     // Update statistics for all affected players (only for singles matches)
-    const affectedPlayerIds = [...new Set([...oldPlayerIds, ...newPlayerIds])];
+    const affectedPlayerIds = [...new Set([...oldPlayerIds, ...newPlayerIds])].filter((id): id is number => id !== null);
     if (affectedPlayerIds.length > 0 && !isTeamMatch) {
       await updatePlayerStatistics(tournamentId, affectedPlayerIds);
     }
@@ -579,9 +579,9 @@ export async function DELETE(
 
     const tournamentId = existingMatch.tournament.id;
     const isTeamMatch = existingMatch.tournament.matchFormat === 'DOUBLES';
-    const playerIds = isTeamMatch 
+    const playerIds = (isTeamMatch 
       ? existingMatch.teamResults.flatMap(tr => [tr.playerAId, tr.playerBId])
-      : existingMatch.results.map(r => r.playerId);
+      : existingMatch.results.map(r => r.playerId)).filter((id): id is number => id !== null);
     const resultCount = isTeamMatch ? existingMatch.teamResults.length : existingMatch.results.length;
 
     // Delete the match (cascade will delete results)

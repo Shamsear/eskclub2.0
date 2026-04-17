@@ -54,12 +54,12 @@ export async function GET(
 
     // Transform results
     const results = match.results.map((result) => ({
-      player: {
+      player: result.player ? {
         id: result.player.id,
         name: result.player.name,
         photo: result.player.photo,
         club: result.player.club,
-      },
+      } : null,
       outcome: result.outcome,
       goalsScored: result.goalsScored,
       goalsConceded: result.goalsConceded,
