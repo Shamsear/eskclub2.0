@@ -207,13 +207,15 @@ export async function updatePlayerStatistics(
     },
   });
 
-  // Group results by player
+  // Group results by player (filter out null playerIds for external players)
   const playerResultsMap = new Map<number, typeof matchResults>();
   for (const result of matchResults) {
-    if (!playerResultsMap.has(result.playerId)) {
-      playerResultsMap.set(result.playerId, []);
+    if (result.playerId !== null) {
+      if (!playerResultsMap.has(result.playerId)) {
+        playerResultsMap.set(result.playerId, []);
+      }
+      playerResultsMap.get(result.playerId)!.push(result);
     }
-    playerResultsMap.get(result.playerId)!.push(result);
   }
 
   // Update statistics for each player
