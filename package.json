@@ -18,6 +18,8 @@
     "test:visual": "playwright test e2e/visual-regression.spec.ts",
     "test:visual:update": "playwright test e2e/visual-regression.spec.ts --update-snapshots",
     "audit:performance": "ts-node scripts/performance-audit.ts",
+    "recalc:preview": "tsx scripts/recalculate-match-points.ts",
+    "recalc:live": "tsx scripts/recalculate-match-points.ts --live",
     "lighthouse": "npm run build && npm run start & sleep 5 && lhci autorun --config=lighthouse.config.js",
     "analyze": "ANALYZE=true npm run build"
   },

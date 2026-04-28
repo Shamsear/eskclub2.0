@@ -160,6 +160,11 @@ export async function PUT(
             pointsPerLoss: true,
             pointsPerGoalScored: true,
             pointsPerGoalConceded: true,
+            pointsPerCleanSheet: true,
+            pointsPerStageWin: true,
+            pointsPerStageDraw: true,
+            pointsForWalkoverWin: true,
+            pointsForWalkoverLoss: true,
           },
         },
         results: {
@@ -232,7 +237,7 @@ export async function PUT(
         });
 
         if (stagePoint) {
-          // Use stage-specific points
+          // Use stage-specific points (walkover points come from template/tournament, not stage)
           pointSystemConfig = {
             pointsPerWin: stagePoint.pointsPerWin,
             pointsPerDraw: stagePoint.pointsPerDraw,
@@ -256,6 +261,8 @@ export async function PUT(
               pointsPerLoss: template.pointsPerLoss,
               pointsPerGoalScored: template.pointsPerGoalScored,
               pointsPerGoalConceded: template.pointsPerGoalConceded,
+              pointsForWalkoverWin: template.pointsForWalkoverWin,
+              pointsForWalkoverLoss: template.pointsForWalkoverLoss,
               conditionalRules: template.conditionalRules,
             };
           } else {
@@ -266,6 +273,8 @@ export async function PUT(
               pointsPerLoss: existingMatch.tournament.pointsPerLoss,
               pointsPerGoalScored: existingMatch.tournament.pointsPerGoalScored,
               pointsPerGoalConceded: existingMatch.tournament.pointsPerGoalConceded,
+              pointsForWalkoverWin: existingMatch.tournament.pointsForWalkoverWin,
+              pointsForWalkoverLoss: existingMatch.tournament.pointsForWalkoverLoss,
             };
           }
         }
@@ -285,6 +294,8 @@ export async function PUT(
             pointsPerLoss: template.pointsPerLoss,
             pointsPerGoalScored: template.pointsPerGoalScored,
             pointsPerGoalConceded: template.pointsPerGoalConceded,
+            pointsForWalkoverWin: template.pointsForWalkoverWin,
+            pointsForWalkoverLoss: template.pointsForWalkoverLoss,
             conditionalRules: template.conditionalRules,
           };
         } else {
@@ -295,6 +306,8 @@ export async function PUT(
             pointsPerLoss: existingMatch.tournament.pointsPerLoss,
             pointsPerGoalScored: existingMatch.tournament.pointsPerGoalScored,
             pointsPerGoalConceded: existingMatch.tournament.pointsPerGoalConceded,
+            pointsForWalkoverWin: existingMatch.tournament.pointsForWalkoverWin,
+            pointsForWalkoverLoss: existingMatch.tournament.pointsForWalkoverLoss,
           };
         }
       } else {
@@ -305,6 +318,8 @@ export async function PUT(
           pointsPerLoss: existingMatch.tournament.pointsPerLoss,
           pointsPerGoalScored: existingMatch.tournament.pointsPerGoalScored,
           pointsPerGoalConceded: existingMatch.tournament.pointsPerGoalConceded,
+          pointsForWalkoverWin: existingMatch.tournament.pointsForWalkoverWin,
+          pointsForWalkoverLoss: existingMatch.tournament.pointsForWalkoverLoss,
         };
       }
 
@@ -318,6 +333,40 @@ export async function PUT(
           conditionalPoints: calculation.conditionalPoints,
         };
       });
+
+      // Handle walkover point calculations if applicable
+      if (walkoverWinnerId !== undefined && walkoverWinnerId !== null) {
+        const walkoverWinPoints = pointSystemConfig.pointsForWalkoverWin || 3;
+        const walkoverLossPoints = pointSystemConfig.pointsForWalkoverLoss || -3;
+        
+        resultsWithPoints = resultsWithPoints.map(result => {
+          if (walkoverWinnerId === 0) {
+            // Both forfeited - no points
+            return {
+              ...result,
+              pointsEarned: 0,
+              basePoints: 0,
+              conditionalPoints: 0,
+            };
+          } else if (result.playerId === walkoverWinnerId) {
+            // Winner by walkover
+            return {
+              ...result,
+              pointsEarned: walkoverWinPoints,
+              basePoints: walkoverWinPoints,
+              conditionalPoints: 0,
+            };
+          } else {
+            // Loser by walkover
+            return {
+              ...result,
+              pointsEarned: walkoverLossPoints,
+              basePoints: walkoverLossPoints,
+              conditionalPoints: 0,
+            };
+          }
+        });
+      }
     }
 
     // Update match in a transaction

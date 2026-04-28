@@ -20,6 +20,9 @@ interface TournamentDetailsClientProps {
     pointsPerLoss: number;
     pointsPerGoalScored: number;
     pointsPerGoalConceded: number;
+    pointsPerCleanSheet: number | null;
+    pointsPerStageWin: number | null;
+    pointsPerStageDraw: number | null;
     matchFormat?: string;
     pointSystemTemplate?: {
       id: number;
@@ -92,6 +95,7 @@ interface TournamentDetailsClientProps {
       losses: number;
       goalsScored: number;
       goalsConceded: number;
+      cleanSheets: number;
       totalPoints: number;
       conditionalPoints?: number;
       player: {
@@ -551,6 +555,9 @@ function LeaderboardTab({ tournament }: TournamentDetailsClientProps) {
         pointsPerLoss: tournament.pointsPerLoss,
         pointsPerGoalScored: tournament.pointsPerGoalScored,
         pointsPerGoalConceded: tournament.pointsPerGoalConceded,
+        pointsPerCleanSheet: tournament.pointsPerCleanSheet ?? undefined,
+        pointsPerStageWin: tournament.pointsPerStageWin ?? undefined,
+        pointsPerStageDraw: tournament.pointsPerStageDraw ?? undefined,
       }}
       stats={tournament.playerStats}
     />

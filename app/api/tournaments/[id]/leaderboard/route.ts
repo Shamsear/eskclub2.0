@@ -39,6 +39,9 @@ export async function GET(
         pointsPerLoss: true,
         pointsPerGoalScored: true,
         pointsPerGoalConceded: true,
+        pointsPerCleanSheet: true,
+        pointsPerStageWin: true,
+        pointsPerStageDraw: true,
       },
     });
 
@@ -77,6 +80,7 @@ export async function GET(
         losses: entry.losses,
         goalsScored: entry.goalsScored,
         goalsConceded: entry.goalsConceded,
+        cleanSheets: entry.cleanSheets,
         totalPoints: entry.totalPoints,
         conditionalPoints: entry.conditionalPoints,
       },
@@ -93,6 +97,9 @@ export async function GET(
           pointsPerLoss: tournament.pointsPerLoss,
           pointsPerGoalScored: tournament.pointsPerGoalScored,
           pointsPerGoalConceded: tournament.pointsPerGoalConceded,
+          pointsPerCleanSheet: tournament.pointsPerCleanSheet,
+          pointsPerStageWin: tournament.pointsPerStageWin,
+          pointsPerStageDraw: tournament.pointsPerStageDraw,
         },
       },
       leaderboard: rankedLeaderboard,

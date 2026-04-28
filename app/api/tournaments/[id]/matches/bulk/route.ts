@@ -63,6 +63,11 @@ export async function POST(
         pointsPerLoss: true,
         pointsPerGoalScored: true,
         pointsPerGoalConceded: true,
+        pointsPerCleanSheet: true,
+        pointsPerStageWin: true,
+        pointsPerStageDraw: true,
+        pointsForWalkoverWin: true,
+        pointsForWalkoverLoss: true,
       },
     });
 
@@ -106,6 +111,9 @@ export async function POST(
           pointsPerLoss: template.pointsPerLoss,
           pointsPerGoalScored: template.pointsPerGoalScored,
           pointsPerGoalConceded: template.pointsPerGoalConceded,
+          pointsPerCleanSheet: template.pointsPerCleanSheet,
+          pointsPerStageWin: template.pointsPerStageWin,
+          pointsPerStageDraw: template.pointsPerStageDraw,
           conditionalRules: template.conditionalRules,
           pointsForWalkoverWin: template.pointsForWalkoverWin,
           pointsForWalkoverLoss: template.pointsForWalkoverLoss,
@@ -117,6 +125,11 @@ export async function POST(
           pointsPerLoss: tournament.pointsPerLoss,
           pointsPerGoalScored: tournament.pointsPerGoalScored,
           pointsPerGoalConceded: tournament.pointsPerGoalConceded,
+          pointsPerCleanSheet: tournament.pointsPerCleanSheet,
+          pointsPerStageWin: tournament.pointsPerStageWin,
+          pointsPerStageDraw: tournament.pointsPerStageDraw,
+          pointsForWalkoverWin: tournament.pointsForWalkoverWin,
+          pointsForWalkoverLoss: tournament.pointsForWalkoverLoss,
         };
       }
     } else {
@@ -126,6 +139,11 @@ export async function POST(
         pointsPerLoss: tournament.pointsPerLoss,
         pointsPerGoalScored: tournament.pointsPerGoalScored,
         pointsPerGoalConceded: tournament.pointsPerGoalConceded,
+        pointsPerCleanSheet: tournament.pointsPerCleanSheet,
+        pointsPerStageWin: tournament.pointsPerStageWin,
+        pointsPerStageDraw: tournament.pointsPerStageDraw,
+        pointsForWalkoverWin: tournament.pointsForWalkoverWin,
+        pointsForWalkoverLoss: tournament.pointsForWalkoverLoss,
       };
     }
 
@@ -190,25 +208,91 @@ export async function POST(
           }
         }
 
-        // Determine outcomes
+        // Determine outcomes and handle walkovers
         const teamAGoals = match.playerAGoals;
         const teamBGoals = match.playerBGoals;
         let teamAOutcome: 'WIN' | 'DRAW' | 'LOSS';
         let teamBOutcome: 'WIN' | 'DRAW' | 'LOSS';
+        let walkoverWinnerId: number | null = null;
+        let isWalkover = false;
 
-        if (teamAGoals > teamBGoals) {
-          teamAOutcome = 'WIN';
-          teamBOutcome = 'LOSS';
-        } else if (teamAGoals < teamBGoals) {
-          teamAOutcome = 'LOSS';
-          teamBOutcome = 'WIN';
+        // Check if this is a walkover match
+        if (match.walkover) {
+          isWalkover = true;
+          const walkoverLower = match.walkover.toLowerCase().trim();
+          
+          if (walkoverLower === 'both' || walkoverLower === 'none') {
+            // Both forfeited
+            walkoverWinnerId = 0;
+            teamAOutcome = 'LOSS';
+            teamBOutcome = 'LOSS';
+          } else if (walkoverLower === match.playerAName.toLowerCase().trim()) {
+            // Player A won by walkover
+            walkoverWinnerId = playerA.id;
+            teamAOutcome = 'WIN';
+            teamBOutcome = 'LOSS';
+          } else if (walkoverLower === match.playerBName.toLowerCase().trim()) {
+            // Player B won by walkover
+            walkoverWinnerId = playerB.id;
+            teamAOutcome = 'LOSS';
+            teamBOutcome = 'WIN';
+          } else {
+            errors.push(`Match ${matchNum}: Invalid walkover value "${match.walkover}". Use player name or "both"`);
+            skipped++;
+            continue;
+          }
         } else {
-          teamAOutcome = 'DRAW';
-          teamBOutcome = 'DRAW';
+          // Normal match - determine outcome by goals
+          if (teamAGoals > teamBGoals) {
+            teamAOutcome = 'WIN';
+            teamBOutcome = 'LOSS';
+          } else if (teamAGoals < teamBGoals) {
+            teamAOutcome = 'LOSS';
+            teamBOutcome = 'WIN';
+          } else {
+            teamAOutcome = 'DRAW';
+            teamBOutcome = 'DRAW';
+          }
         }
 
         // Calculate points
-        const calculatePoints = (outcome: 'WIN' | 'DRAW' | 'LOSS', goalsScored: number, goalsConceded: number, extraPoints: number = 0) => {
+        const calculatePoints = (
+          playerId: number,
+          outcome: 'WIN' | 'DRAW' | 'LOSS', 
+          goalsScored: number, 
+          goalsConceded: number, 
+          extraPoints: number = 0
+        ) => {
+          // Handle walkover points
+          if (isWalkover) {
+            const walkoverWinPoints = pointSystemConfig.pointsForWalkoverWin || 3;
+            const walkoverLossPoints = pointSystemConfig.pointsForWalkoverLoss || -3;
+            
+            if (walkoverWinnerId === 0) {
+              // Both forfeited - no points
+              return {
+                pointsEarned: 0,
+                basePoints: 0,
+                conditionalPoints: 0,
+              };
+            } else if (playerId === walkoverWinnerId) {
+              // Winner by walkover
+              return {
+                pointsEarned: walkoverWinPoints,
+                basePoints: walkoverWinPoints,
+                conditionalPoints: 0,
+              };
+            } else {
+              // Loser by walkover
+              return {
+                pointsEarned: walkoverLossPoints,
+                basePoints: walkoverLossPoints,
+                conditionalPoints: 0,
+              };
+            }
+          }
+          
+          // Normal match - calculate points with rules
           const result = {
             outcome,
             goalsScored,
@@ -222,8 +306,8 @@ export async function POST(
           };
         };
 
-        const teamAPoints = calculatePoints(teamAOutcome, teamAGoals, teamBGoals, match.playerAExtraPoints || 0);
-        const teamBPoints = calculatePoints(teamBOutcome, teamBGoals, teamAGoals, match.playerBExtraPoints || 0);
+        const teamAPoints = calculatePoints(playerA.id, teamAOutcome, teamAGoals, teamBGoals, match.playerAExtraPoints || 0);
+        const teamBPoints = calculatePoints(playerB.id, teamBOutcome, teamBGoals, teamAGoals, match.playerBExtraPoints || 0);
 
         // Create match in transaction
         const createdMatch = await prisma.$transaction(async (tx) => {
@@ -232,6 +316,7 @@ export async function POST(
               tournamentId,
               matchDate: new Date(match.matchDate),
               isTeamMatch: isDoublesFormat,
+              ...(walkoverWinnerId !== null && { walkoverWinnerId }),
             },
           });
 

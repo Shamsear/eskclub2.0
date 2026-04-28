@@ -314,6 +314,7 @@ model TournamentPlayerStats {
   losses            Int        @default(0)
   goalsScored       Int        @default(0)
   goalsConceded     Int        @default(0)
+  cleanSheets       Int        @default(0)
   totalPoints       Int        @default(0)
   updatedAt         DateTime   @updatedAt
   conditionalPoints Int        @default(0)

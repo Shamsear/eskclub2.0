@@ -12,6 +12,9 @@ interface LeaderboardProps {
     pointsPerLoss: number;
     pointsPerGoalScored: number;
     pointsPerGoalConceded: number;
+    pointsPerCleanSheet?: number;
+    pointsPerStageWin?: number;
+    pointsPerStageDraw?: number;
   };
   stats: Array<{
     id: number;
@@ -23,6 +26,7 @@ interface LeaderboardProps {
     goalsConceded: number;
     totalPoints: number;
     conditionalPoints?: number;
+    cleanSheets?: number;
     player: {
       id: number;
       name: string;
@@ -192,6 +196,7 @@ interface PointsBreakdownProps {
     goalsConceded: number;
     totalPoints: number;
     conditionalPoints?: number;
+    cleanSheets?: number;
   };
   tournament: {
     pointsPerWin: number;
@@ -199,6 +204,9 @@ interface PointsBreakdownProps {
     pointsPerLoss: number;
     pointsPerGoalScored: number;
     pointsPerGoalConceded: number;
+    pointsPerCleanSheet?: number;
+    pointsPerStageWin?: number;
+    pointsPerStageDraw?: number;
   };
 }
 
@@ -208,7 +216,8 @@ function PointsBreakdown({ stat, tournament }: PointsBreakdownProps) {
   const lossPoints = stat.losses * tournament.pointsPerLoss;
   const goalsScoredPoints = stat.goalsScored * tournament.pointsPerGoalScored;
   const goalsConcededPoints = stat.goalsConceded * tournament.pointsPerGoalConceded;
-  const basePoints = winPoints + drawPoints + lossPoints + goalsScoredPoints + goalsConcededPoints;
+  const cleanSheetPoints = (stat.cleanSheets || 0) * (tournament.pointsPerCleanSheet || 0);
+  const basePoints = winPoints + drawPoints + lossPoints + goalsScoredPoints + goalsConcededPoints + cleanSheetPoints;
   const conditionalPoints = stat.conditionalPoints || 0;
   const calculatedTotal = basePoints + conditionalPoints;
   const isValid = calculatedTotal === stat.totalPoints;
@@ -253,6 +262,12 @@ function PointsBreakdown({ stat, tournament }: PointsBreakdownProps) {
               <div className="flex justify-between text-xs">
                 <span className="text-gray-700">{stat.goalsConceded} Conceded × {tournament.pointsPerGoalConceded} pts</span>
                 <span className="font-semibold text-orange-600">{goalsConcededPoints >= 0 ? '+' : ''}{goalsConcededPoints}</span>
+              </div>
+            )}
+            {(stat.cleanSheets || 0) > 0 && (tournament.pointsPerCleanSheet || 0) > 0 && (
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-700">{stat.cleanSheets} Clean Sheet{stat.cleanSheets !== 1 ? 's' : ''} × {tournament.pointsPerCleanSheet} pts</span>
+                <span className="font-semibold text-green-600">+{cleanSheetPoints}</span>
               </div>
             )}
           </div>

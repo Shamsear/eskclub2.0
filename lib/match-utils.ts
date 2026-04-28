@@ -7,6 +7,9 @@ export interface PointSystem {
   pointsPerLoss: number;
   pointsPerGoalScored: number;
   pointsPerGoalConceded: number;
+  pointsPerCleanSheet?: number;
+  pointsPerStageWin?: number;
+  pointsPerStageDraw?: number;
 }
 
 export interface ConditionalRule {
@@ -100,9 +103,17 @@ export function calculatePointsWithRules(
   switch (result.outcome) {
     case MatchOutcome.WIN:
       basePoints += config.pointsPerWin;
+      // Add stage win bonus if configured
+      if (config.pointsPerStageWin) {
+        basePoints += config.pointsPerStageWin;
+      }
       break;
     case MatchOutcome.DRAW:
       basePoints += config.pointsPerDraw;
+      // Add stage draw bonus if configured
+      if (config.pointsPerStageDraw) {
+        basePoints += config.pointsPerStageDraw;
+      }
       break;
     case MatchOutcome.LOSS:
       basePoints += config.pointsPerLoss;
@@ -114,6 +125,11 @@ export function calculatePointsWithRules(
 
   // Add points for goals conceded (can be negative)
   basePoints += result.goalsConceded * config.pointsPerGoalConceded;
+
+  // Add clean sheet bonus if configured and applicable
+  if (config.pointsPerCleanSheet && result.goalsConceded === 0) {
+    basePoints += config.pointsPerCleanSheet;
+  }
 
   // Evaluate conditional rules
   const appliedRules: AppliedRule[] = [];
@@ -229,6 +245,7 @@ export async function updatePlayerStatistics(
       losses: results.filter(r => r.outcome === MatchOutcome.LOSS).length,
       goalsScored: results.reduce((sum, r) => sum + r.goalsScored, 0),
       goalsConceded: results.reduce((sum, r) => sum + r.goalsConceded, 0),
+      cleanSheets: results.filter(r => r.goalsConceded === 0).length,
       totalPoints: results.reduce((sum, r) => sum + r.pointsEarned, 0),
       conditionalPoints: results.reduce((sum, r) => sum + r.conditionalPoints, 0),
     };

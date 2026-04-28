@@ -109,6 +109,7 @@ async function verifyWorkflow() {
           losses: player.id === players[1].id ? 1 : 0,
           goalsScored: player.id === players[0].id ? 3 : 1,
           goalsConceded: player.id === players[0].id ? 1 : 3,
+          cleanSheets: 0,
           totalPoints: player.id === players[0].id ? 6 : 1,
         },
         update: {

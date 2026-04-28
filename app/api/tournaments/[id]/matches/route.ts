@@ -115,6 +115,11 @@ export async function POST(
         pointsPerLoss: true,
         pointsPerGoalScored: true,
         pointsPerGoalConceded: true,
+        pointsPerCleanSheet: true,
+        pointsPerStageWin: true,
+        pointsPerStageDraw: true,
+        pointsForWalkoverWin: true,
+        pointsForWalkoverLoss: true,
       },
     });
 
@@ -150,7 +155,7 @@ export async function POST(
       });
 
       if (stagePoint) {
-        // Use stage-specific points
+        // Use stage-specific points (walkover points come from template/tournament, not stage)
         pointSystemConfig = {
           pointsPerWin: stagePoint.pointsPerWin,
           pointsPerDraw: stagePoint.pointsPerDraw,
@@ -174,6 +179,11 @@ export async function POST(
             pointsPerLoss: template.pointsPerLoss,
             pointsPerGoalScored: template.pointsPerGoalScored,
             pointsPerGoalConceded: template.pointsPerGoalConceded,
+            pointsPerCleanSheet: template.pointsPerCleanSheet,
+            pointsPerStageWin: template.pointsPerStageWin,
+            pointsPerStageDraw: template.pointsPerStageDraw,
+            pointsForWalkoverWin: template.pointsForWalkoverWin,
+            pointsForWalkoverLoss: template.pointsForWalkoverLoss,
             conditionalRules: template.conditionalRules,
           };
         } else {
@@ -184,6 +194,11 @@ export async function POST(
             pointsPerLoss: tournament.pointsPerLoss,
             pointsPerGoalScored: tournament.pointsPerGoalScored,
             pointsPerGoalConceded: tournament.pointsPerGoalConceded,
+            pointsPerCleanSheet: tournament.pointsPerCleanSheet,
+            pointsPerStageWin: tournament.pointsPerStageWin,
+            pointsPerStageDraw: tournament.pointsPerStageDraw,
+            pointsForWalkoverWin: tournament.pointsForWalkoverWin,
+            pointsForWalkoverLoss: tournament.pointsForWalkoverLoss,
           };
         }
       }
@@ -203,6 +218,11 @@ export async function POST(
           pointsPerLoss: template.pointsPerLoss,
           pointsPerGoalScored: template.pointsPerGoalScored,
           pointsPerGoalConceded: template.pointsPerGoalConceded,
+          pointsPerCleanSheet: template.pointsPerCleanSheet,
+          pointsPerStageWin: template.pointsPerStageWin,
+          pointsPerStageDraw: template.pointsPerStageDraw,
+          pointsForWalkoverWin: template.pointsForWalkoverWin,
+          pointsForWalkoverLoss: template.pointsForWalkoverLoss,
           conditionalRules: template.conditionalRules,
         };
       } else {
@@ -213,6 +233,11 @@ export async function POST(
           pointsPerLoss: tournament.pointsPerLoss,
           pointsPerGoalScored: tournament.pointsPerGoalScored,
           pointsPerGoalConceded: tournament.pointsPerGoalConceded,
+          pointsPerCleanSheet: tournament.pointsPerCleanSheet,
+          pointsPerStageWin: tournament.pointsPerStageWin,
+          pointsPerStageDraw: tournament.pointsPerStageDraw,
+          pointsForWalkoverWin: tournament.pointsForWalkoverWin,
+          pointsForWalkoverLoss: tournament.pointsForWalkoverLoss,
         };
       }
     } else {
@@ -223,6 +248,11 @@ export async function POST(
         pointsPerLoss: tournament.pointsPerLoss,
         pointsPerGoalScored: tournament.pointsPerGoalScored,
         pointsPerGoalConceded: tournament.pointsPerGoalConceded,
+        pointsPerCleanSheet: tournament.pointsPerCleanSheet,
+        pointsPerStageWin: tournament.pointsPerStageWin,
+        pointsPerStageDraw: tournament.pointsPerStageDraw,
+        pointsForWalkoverWin: tournament.pointsForWalkoverWin,
+        pointsForWalkoverLoss: tournament.pointsForWalkoverLoss,
       };
     }
 
@@ -284,23 +314,8 @@ export async function POST(
     // Handle walkover point calculations if applicable
     let finalResultsWithPoints = resultsWithPoints;
     if (walkoverWinnerId !== undefined && walkoverWinnerId !== null) {
-      // Get walkover points from template or tournament
-      let walkoverWinPoints = 3;
-      let walkoverLossPoints = -3;
-      
-      if (tournament.pointSystemTemplateId) {
-        const template = await prisma.pointSystemTemplate.findUnique({
-          where: { id: tournament.pointSystemTemplateId },
-          select: {
-            pointsForWalkoverWin: true,
-            pointsForWalkoverLoss: true,
-          },
-        });
-        if (template) {
-          walkoverWinPoints = template.pointsForWalkoverWin;
-          walkoverLossPoints = template.pointsForWalkoverLoss;
-        }
-      }
+      const walkoverWinPoints = pointSystemConfig.pointsForWalkoverWin || 3;
+      const walkoverLossPoints = pointSystemConfig.pointsForWalkoverLoss || -3;
       
       // Apply walkover points (unless custom points are specified)
       finalResultsWithPoints = results.map(result => {
