@@ -127,7 +127,7 @@ export function calculatePointsWithRules(
   basePoints += result.goalsConceded * config.pointsPerGoalConceded;
 
   // Add clean sheet bonus if configured and applicable
-  if (config.pointsPerCleanSheet && result.goalsConceded === 0) {
+  if (config.pointsPerCleanSheet !== undefined && config.pointsPerCleanSheet !== null && result.goalsConceded === 0) {
     basePoints += config.pointsPerCleanSheet;
   }
 

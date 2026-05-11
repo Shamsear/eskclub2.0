@@ -23,6 +23,10 @@ interface BulkMatchData {
   playerBExtraPoints?: number;
   playerCExtraPoints?: number;
   playerDExtraPoints?: number;
+  playerAIsExternal?: boolean;
+  playerBIsExternal?: boolean;
+  playerCIsExternal?: boolean;
+  playerDIsExternal?: boolean;
 }
 
 // POST /api/tournaments/[id]/matches/bulk - Create multiple matches
@@ -93,6 +97,60 @@ export async function POST(
 
     const playerMap = new Map(participants.map(p => [p.player.name.toLowerCase(), p.player]));
 
+    // Helper function to get or create external player
+    const getOrCreatePlayer = async (
+      playerName: string,
+      isExternal: boolean | undefined,
+      matchNum: number
+    ): Promise<{ id: number; name: string; clubId: number | null } | null> => {
+      const existingPlayer = playerMap.get(playerName.toLowerCase());
+      
+      if (existingPlayer) {
+        return existingPlayer;
+      }
+      
+      // If not found and marked as external, create a free agent player
+      if (isExternal) {
+        try {
+          const externalPlayer = await prisma.player.create({
+            data: {
+              name: playerName,
+              email: `external_${Date.now()}_${Math.random().toString(36).substring(7)}@external.player`,
+              isFreeAgent: true,
+              clubId: null,
+            },
+          });
+          
+          // Add to tournament participants
+          await prisma.tournamentParticipant.create({
+            data: {
+              tournamentId,
+              playerId: externalPlayer.id,
+            },
+          });
+          
+          // Add to map for subsequent matches
+          playerMap.set(playerName.toLowerCase(), {
+            id: externalPlayer.id,
+            name: externalPlayer.name,
+            clubId: null,
+          });
+          
+          return {
+            id: externalPlayer.id,
+            name: externalPlayer.name,
+            clubId: null,
+          };
+        } catch (error: any) {
+          errors.push(`Match ${matchNum}: Failed to create external player "${playerName}": ${error.message}`);
+          return null;
+        }
+      }
+      
+      // Not found and not marked as external
+      return null;
+    };
+
     // Fetch point system configuration
     let pointSystemConfig: PointSystemConfig;
     
@@ -157,17 +215,17 @@ export async function POST(
       const matchNum = i + 1;
 
       try {
-        // Find players
-        const playerA = playerMap.get(match.playerAName.toLowerCase());
-        const playerB = playerMap.get(match.playerBName.toLowerCase());
+        // Find or create players
+        const playerA = await getOrCreatePlayer(match.playerAName, match.playerAIsExternal, matchNum);
+        const playerB = await getOrCreatePlayer(match.playerBName, match.playerBIsExternal, matchNum);
 
         if (!playerA) {
-          errors.push(`Match ${matchNum}: Player "${match.playerAName}" not found in tournament participants`);
+          errors.push(`Match ${matchNum}: Player "${match.playerAName}" not found in tournament participants. Mark as external to auto-create.`);
           skipped++;
           continue;
         }
         if (!playerB) {
-          errors.push(`Match ${matchNum}: Player "${match.playerBName}" not found in tournament participants`);
+          errors.push(`Match ${matchNum}: Player "${match.playerBName}" not found in tournament participants. Mark as external to auto-create.`);
           skipped++;
           continue;
         }
@@ -181,16 +239,16 @@ export async function POST(
             continue;
           }
 
-          playerC = playerMap.get(match.playerCName.toLowerCase());
-          playerD = playerMap.get(match.playerDName.toLowerCase());
+          playerC = await getOrCreatePlayer(match.playerCName, match.playerCIsExternal, matchNum);
+          playerD = await getOrCreatePlayer(match.playerDName, match.playerDIsExternal, matchNum);
 
           if (!playerC) {
-            errors.push(`Match ${matchNum}: Player "${match.playerCName}" not found in tournament participants`);
+            errors.push(`Match ${matchNum}: Player "${match.playerCName}" not found in tournament participants. Mark as external to auto-create.`);
             skipped++;
             continue;
           }
           if (!playerD) {
-            errors.push(`Match ${matchNum}: Player "${match.playerDName}" not found in tournament participants`);
+            errors.push(`Match ${matchNum}: Player "${match.playerDName}" not found in tournament participants. Mark as external to auto-create.`);
             skipped++;
             continue;
           }
@@ -218,31 +276,39 @@ export async function POST(
 
         // Check if this is a walkover match
         if (match.walkover) {
-          isWalkover = true;
           const walkoverLower = match.walkover.toLowerCase().trim();
           
-          if (walkoverLower === 'both' || walkoverLower === 'none') {
+          // Check if it's explicitly marked as normal/regular match
+          if (walkoverLower === 'normal' || walkoverLower === 'none' || walkoverLower === '') {
+            // Treat as normal match
+            isWalkover = false;
+          } else if (walkoverLower === 'both') {
             // Both forfeited
+            isWalkover = true;
             walkoverWinnerId = 0;
             teamAOutcome = 'LOSS';
             teamBOutcome = 'LOSS';
           } else if (walkoverLower === match.playerAName.toLowerCase().trim()) {
             // Player A won by walkover
+            isWalkover = true;
             walkoverWinnerId = playerA.id;
             teamAOutcome = 'WIN';
             teamBOutcome = 'LOSS';
           } else if (walkoverLower === match.playerBName.toLowerCase().trim()) {
             // Player B won by walkover
+            isWalkover = true;
             walkoverWinnerId = playerB.id;
             teamAOutcome = 'LOSS';
             teamBOutcome = 'WIN';
           } else {
-            errors.push(`Match ${matchNum}: Invalid walkover value "${match.walkover}". Use player name or "both"`);
+            errors.push(`Match ${matchNum}: Invalid walkover value "${match.walkover}". Use player name, "both", or "normal"`);
             skipped++;
             continue;
           }
-        } else {
-          // Normal match - determine outcome by goals
+        }
+        
+        // Determine outcome by goals for normal matches
+        if (!isWalkover) {
           if (teamAGoals > teamBGoals) {
             teamAOutcome = 'WIN';
             teamBOutcome = 'LOSS';
