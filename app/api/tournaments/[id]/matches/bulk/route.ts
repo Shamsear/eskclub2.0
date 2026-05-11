@@ -230,8 +230,8 @@ export async function POST(
           continue;
         }
 
-        let playerC: { id: number; name: string; clubId: number | null } | undefined;
-        let playerD: { id: number; name: string; clubId: number | null } | undefined;
+        let playerC: { id: number; name: string; clubId: number | null } | null | undefined;
+        let playerD: { id: number; name: string; clubId: number | null } | null | undefined;
         if (isDoublesFormat) {
           if (!match.playerCName || !match.playerDName) {
             errors.push(`Match ${matchNum}: Doubles format requires 4 players`);
@@ -269,8 +269,8 @@ export async function POST(
         // Determine outcomes and handle walkovers
         const teamAGoals = match.playerAGoals;
         const teamBGoals = match.playerBGoals;
-        let teamAOutcome: 'WIN' | 'DRAW' | 'LOSS';
-        let teamBOutcome: 'WIN' | 'DRAW' | 'LOSS';
+        let teamAOutcome: 'WIN' | 'DRAW' | 'LOSS' = 'DRAW';
+        let teamBOutcome: 'WIN' | 'DRAW' | 'LOSS' = 'DRAW';
         let walkoverWinnerId: number | null = null;
         let isWalkover = false;
 
