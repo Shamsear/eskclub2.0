@@ -719,6 +719,10 @@ ${participants.map(p => p.name).join(', ')}`;
             playerBName: match.playerBName,
             playerCName: match.playerCName,
             playerDName: match.playerDName,
+            playerAIsExternal: !match.playerAId || match.playerAId === 0,
+            playerBIsExternal: !match.playerBId || match.playerBId === 0,
+            playerCIsExternal: !match.playerCId || match.playerCId === 0,
+            playerDIsExternal: !match.playerDId || match.playerDId === 0,
             playerAGoals: match.playerAGoals,
             playerBGoals: match.playerBGoals,
             matchDate: match.matchDate,
@@ -731,6 +735,8 @@ ${participants.map(p => p.name).join(', ')}`;
         : {
             playerAName: match.playerAName,
             playerBName: match.playerBName,
+            playerAIsExternal: !match.playerAId || match.playerAId === 0,
+            playerBIsExternal: !match.playerBId || match.playerBId === 0,
             playerAGoals: match.playerAGoals,
             playerBGoals: match.playerBGoals,
             matchDate: match.matchDate,
@@ -908,7 +914,16 @@ ${participants.map(p => p.name).join(', ')}`;
                         ))}
                       </select>
                       {!isDoublesFormat && !match.playerBId && (
-                        <p className="mt-1 text-xs text-blue-600">Stats will only be tracked for Player A</p>
+                        <>
+                          <input
+                            type="text"
+                            value={match.playerBName || ''}
+                            onChange={(e) => updateFormMatch(match.id, 'playerBName', e.target.value)}
+                            placeholder="Enter external player name"
+                            className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-white text-gray-900"
+                          />
+                          <p className="mt-1 text-xs text-blue-600">Enter name for external player (stats will only be tracked for Player A)</p>
+                        </>
                       )}
                     </div>
 

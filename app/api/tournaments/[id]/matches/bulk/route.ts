@@ -215,6 +215,18 @@ export async function POST(
       const matchNum = i + 1;
 
       try {
+        // Validate player names are not empty
+        if (!match.playerAName || match.playerAName.trim() === '') {
+          errors.push(`Match ${matchNum}: Player A name is required`);
+          skipped++;
+          continue;
+        }
+        if (!match.playerBName || match.playerBName.trim() === '') {
+          errors.push(`Match ${matchNum}: Player B name is required`);
+          skipped++;
+          continue;
+        }
+
         // Find or create players
         const playerA = await getOrCreatePlayer(match.playerAName, match.playerAIsExternal, matchNum);
         const playerB = await getOrCreatePlayer(match.playerBName, match.playerBIsExternal, matchNum);
@@ -233,8 +245,13 @@ export async function POST(
         let playerC: { id: number; name: string; clubId: number | null } | null | undefined;
         let playerD: { id: number; name: string; clubId: number | null } | null | undefined;
         if (isDoublesFormat) {
-          if (!match.playerCName || !match.playerDName) {
-            errors.push(`Match ${matchNum}: Doubles format requires 4 players`);
+          if (!match.playerCName || match.playerCName.trim() === '') {
+            errors.push(`Match ${matchNum}: Player C name is required for doubles format`);
+            skipped++;
+            continue;
+          }
+          if (!match.playerDName || match.playerDName.trim() === '') {
+            errors.push(`Match ${matchNum}: Player D name is required for doubles format`);
             skipped++;
             continue;
           }
